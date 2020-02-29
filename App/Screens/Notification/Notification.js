@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -31,8 +31,22 @@ import {
   TEXT_COLOR,
   INITIAL_BUTTON,
 } from '../../Resources/Color/Color';
+import ApiManager from '../../ApiManager/ApiManager';
 
 export const Notification = ({navigation}) => {
+  const [notification, setNotification] = useState([]);
+  const [checker,setChecker]=useState(false)
+  useEffect(() => {
+    if(checker){
+    new ApiManager()
+      .notification()
+      .then(res => {
+        console.log('res', res);
+        setChecker(true)
+        setNotification(res.data.Notifications);
+      })
+      .catch(err => console.log(err));}
+  });
   console.disableYellowBox = true;
   let data = [
     {
@@ -40,45 +54,46 @@ export const Notification = ({navigation}) => {
       image: require('../../Asset/chat1.png'),
       name: 'March SoulLaComa',
       text: 'Commented at your Post',
-      route:'EditDetails'
+      route: 'EditDetails',
     },
     {
       id: 2,
       name: 'John DoeLink',
-      text:'Congrats to donating $2, you are helping to turn the World into a better place to live',
-      route:'Rating'
+      text:
+        'Congrats to donating $2, you are helping to turn the World into a better place to live',
+      route: 'Rating',
     },
     {
       id: 4,
       name: 'Finn DoRemiFaso',
       text: 'Congrats you complete 1 sell',
       attachment: '',
-      route:'Rating'
+      route: 'Rating',
     },
     {
       id: 5,
       name: 'Maria More More',
-      text:'The world become better when We help each other.You are in the right way! ',
-      route:'Rating'
-
+      text:
+        'The world become better when We help each other.You are in the right way! ',
+      route: 'Rating',
     },
     {
       id: 1,
       text: 'We are proud to have a found what you were looking for! ',
-      route:'Rating'
-
+      route: 'Rating',
     },
     {
       id: 6,
-      image:  require('../../Asset/chat2.png'),
+      image: require('../../Asset/chat2.png'),
       name: 'Clark June Boom!',
       text: 'You`ve "received  on donation.Give some stars to donator!',
-      route:'Rating'
+      route: 'Rating',
     },
   ];
+  console.log(notification,"notification")
   return (
     <View style={Container}>
-      <StatusBar 
+      <StatusBar
         translucent
         backgroundColor="transparent"
         barStyle="dark-content"
@@ -87,40 +102,44 @@ export const Notification = ({navigation}) => {
         <TouchableOpacity style={TopTextStyle}>
           <Text style={TopText}>Notifications</Text>
         </TouchableOpacity>
-        <FlatList
-          style={{marginTop: responsiveHeight(2)}}
-          data={data}
-          keyExtractor={item => item.id}
-          renderItem={(item, index) => {
-            return (
-              <TouchableOpacity
-                style={Container2}
-                onPress={() => navigation.navigate(item.item.route)}>
-                {item.item.image ? (
-                  <View style={ViewPad}>
-                    <View style={imageView}>
-                      <Image source={item.item.image} style={image} />
+        {notification.length>0 ? (
+          <FlatList
+            style={{marginTop: responsiveHeight(2)}}
+            data={data}
+            keyExtractor={item => item.id}
+            renderItem={(item, index) => {
+              return (
+                <TouchableOpacity
+                  style={Container2}
+                  onPress={() => navigation.navigate(item.item.route)}>
+                  {item.item.image ? (
+                    <View style={ViewPad}>
+                      <View style={imageView}>
+                        <Image source={item.item.image} style={image} />
+                      </View>
+                      <Text style={TextContainer}>
+                        <Text style={Username}>{item.item.name}</Text>{' '}
+                        <Text style={TextComment}>{item.item.text}</Text>{' '}
+                        <Text style={Time}>10:32</Text>
+                      </Text>
                     </View>
-                    <Text style={TextContainer}>
-                      
-                      <Text style={Username}>{item.item.name}</Text>{' '}
-                      <Text style={TextComment}>{item.item.text}</Text>{' '}
-                      <Text style={Time}>10:32</Text>
-                    </Text>
-                  </View>
-                ) : (
-                  <View style={ViewPad}>
-                    <Text style={TextContainer2}>
-                      
-                      <Text style={TextComment}>{item.item.text}</Text>{' '}
-                      <Text style={Time}>10:32</Text>
-                    </Text>
-                  </View>
-                )}
-              </TouchableOpacity>
-            );
-          }}
-        />
+                  ) : (
+                    <View style={ViewPad}>
+                      <Text style={TextContainer2}>
+                        <Text style={TextComment}>{item.item.text}</Text>{' '}
+                        <Text style={Time}>10:32</Text>
+                      </Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+              );
+            }}
+          />
+        ) : (
+          <View style={{flex:1,justifyContent:'center',alignItems:'center'}}>
+          <Text style>No Notification for you</Text>
+          </View>
+        )}
       </SafeAreaView>
     </View>
   );

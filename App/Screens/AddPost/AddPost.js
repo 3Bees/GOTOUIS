@@ -5,7 +5,7 @@ import {
   TouchableOpacity,
   StatusBar,
   SafeAreaView,
-  ScrollView
+  ScrollView,
 } from 'react-native';
 import {
   TopText,
@@ -18,15 +18,20 @@ import {
   TextStyleDo,
   TextStyleDo1,
   StyleView,
-  cardText
+  cardText,
 } from './Style';
 import {Container} from '../SignUp/Style';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Entypo from 'react-native-vector-icons/Entypo';
-import {responsiveFontSize, responsiveHeight, responsiveWidth} from 'react-native-responsive-dimensions';
+import {
+  responsiveFontSize,
+  responsiveHeight,
+  responsiveWidth,
+} from 'react-native-responsive-dimensions';
 
 export const AddPost = ({navigation}) => {
+
   return (
     <View style={Container}>
       <StatusBar
@@ -44,7 +49,13 @@ export const AddPost = ({navigation}) => {
             onPress={() => navigation.navigate('PostingData')}>
             <View style={TopView2}>
               <View
-                style={[TopView3, {backgroundColor: 'rgba(0, 152, 155, 0.1)',marginLeft:responsiveHeight(1)}]}>
+                style={[
+                  TopView3,
+                  {
+                    backgroundColor: 'rgba(0, 152, 155, 0.1)',
+                    marginLeft: responsiveHeight(1),
+                  },
+                ]}>
                 <Entypo
                   name="heart-outlined"
                   size={responsiveFontSize(3.3)}
@@ -53,7 +64,7 @@ export const AddPost = ({navigation}) => {
               </View>
             </View>
             <View style={ViewFlex7}>
-              <Text style={[TextStyleDo1,{color:'#00989B'}]}>Donate</Text>
+              <Text style={[TextStyleDo1, {color: '#00989B'}]}>Donate</Text>
               <Text style={cardText}>
                 Make a positive impect! Help to empower people to fight against
                 global waste problem,poverty,pollution and climate change.
@@ -65,7 +76,13 @@ export const AddPost = ({navigation}) => {
             style={StyleView}>
             <View style={TopView2}>
               <View
-                style={[TopView3, {backgroundColor: 'rgba(222, 141, 0, 0.1)',marginLeft:responsiveHeight(1)}]}>
+                style={[
+                  TopView3,
+                  {
+                    backgroundColor: 'rgba(222, 141, 0, 0.1)',
+                    marginLeft: responsiveHeight(1),
+                  },
+                ]}>
                 <Entypo
                   name="star-outlined"
                   size={responsiveFontSize(3.3)}
@@ -74,7 +91,7 @@ export const AddPost = ({navigation}) => {
               </View>
             </View>
             <View style={ViewFlex7}>
-              <Text style={[TextStyleDo1,{color:'#DE8D00'}]}>Favour</Text>
+              <Text style={[TextStyleDo1, {color: '#DE8D00'}]}>Favour</Text>
               <Text style={cardText}>
                 Ask for a Favour,may you can find a hand for you to make any
                 service.
@@ -86,7 +103,13 @@ export const AddPost = ({navigation}) => {
             style={StyleView}>
             <View style={TopView2}>
               <View
-                style={[TopView3, {backgroundColor: 'rgba(200, 0, 26, 0.1)',marginLeft:responsiveHeight(1)}]}>
+                style={[
+                  TopView3,
+                  {
+                    backgroundColor: 'rgba(200, 0, 26, 0.1)',
+                    marginLeft: responsiveHeight(1),
+                  },
+                ]}>
                 <AntDesign
                   name="pay-circle-o1"
                   size={responsiveFontSize(3.3)}
@@ -95,7 +118,7 @@ export const AddPost = ({navigation}) => {
               </View>
             </View>
             <View style={ViewFlex7}>
-              <Text style={[TextStyleDo1,{color:'#C8001A'}]}>Selling</Text>
+              <Text style={[TextStyleDo1, {color: '#C8001A'}]}>Selling</Text>
               <Text style={cardText}>
                 Do you want to earn some money selling things you are not
                 using?Post it!
@@ -106,10 +129,16 @@ export const AddPost = ({navigation}) => {
             onPress={() => {
               navigation.navigate('LookingFor');
             }}
-            style={[TopView1,{marginBottom:responsiveHeight(2)}]}>
+            style={[TopView1, {marginBottom: responsiveHeight(2)}]}>
             <View style={TopView2}>
               <View
-                style={[TopView3, {backgroundColor: 'rgba(0, 92, 231, 0.1)',marginLeft:responsiveHeight(1)}]}>
+                style={[
+                  TopView3,
+                  {
+                    backgroundColor: 'rgba(0, 92, 231, 0.1)',
+                    marginLeft: responsiveHeight(1),
+                  },
+                ]}>
                 <Ionicons
                   name="ios-search"
                   size={responsiveFontSize(3.3)}
@@ -118,7 +147,9 @@ export const AddPost = ({navigation}) => {
               </View>
             </View>
             <View style={ViewFlex7}>
-              <Text style={[TextStyleDo1,{color:'#005CE7'}]}>Looking For</Text>
+              <Text style={[TextStyleDo1, {color: '#005CE7'}]}>
+                Looking For
+              </Text>
               <Text style={cardText}>
                 Looking for some specific like a tour guide,a gymate or an
                 English Teacher?

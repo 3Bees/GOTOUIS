@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Goto</string>
+    <string name="facebook_app_id">1742796815850693</string>
+<string name="fb_login_protocol_scheme">fb1742796815850693</string>
 </resources>
