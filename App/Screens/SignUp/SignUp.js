@@ -8,6 +8,7 @@ import {
   Image,
   KeyboardAvoidingView,
   ActivityIndicator,
+  Modal,
 } from 'react-native';
 import {
   Container,
@@ -27,7 +28,10 @@ import {
 import MyTextField from '../../Common/Input/MyTextField';
 import SocialButton from '../../Common/SocialButton/SocialButton';
 import Button from '../../Common/Button/Button';
-import {responsiveHeight} from 'react-native-responsive-dimensions';
+import {
+  responsiveHeight,
+  responsiveWidth,
+} from 'react-native-responsive-dimensions';
 import {ScrollView} from 'react-native-gesture-handler';
 
 import ApolloClient from 'apollo-boost';
@@ -36,6 +40,7 @@ import ApiManager from '../../ApiManager/ApiManager';
 import {COLOR_PRIMARY} from '../../Resources/Color/Color';
 import AsyncStorage from '@react-native-community/async-storage';
 import {useSelector, useDispatch} from 'react-redux';
+import Geolocation from '@react-native-community/geolocation';
 
 const client = new ApolloClient({
   uri: 'https://api.gotoapp.io/graphql',
@@ -49,21 +54,44 @@ export const SignUp = ({navigation}) => {
   const [loading, setLoading] = useState(false);
   const [password, setPassword] = useState('');
   const [btnCOlor, setbtnColor] = useState(false);
+  const [modalVisible, setmodalVisible] = useState(false);
 
   const dispatch = useDispatch();
   useEffect(() => {
     name && password && email !== '' ? setbtnColor(true) : setbtnColor(false);
+    getCurrentPosition();
   });
 
-  check = async () => {
+  const getCurrentPosition = async () => {
+    Geolocation.getCurrentPosition(async position => {
+      await AsyncStorage.setItem(
+        'lat',
+        JSON.stringify(position.coords.latitude),
+      );
+      await AsyncStorage.setItem(
+        'lon',
+        JSON.stringify(position.coords.longitude),
+      );
+    });
+  };
+  const toggleModal = () => {
+    setmodalVisible(!modalVisible);
+  };
+
+  const check = async yes => {
+    getCurrentPosition();
     new ApiManager()
       .SignUp(name, email, password)
       .then(async res => {
         if (res) {
           console.log(res.data.SignUp.User);
-          dispatch({type: 'USER', payload: res.data.SignIn.User});
-          await AsyncStorage.setItem('token', res.data.SignUn.Token);
-          navigation.navigate('Location', {id: 2});
+          if (yes) {
+            navigation.navigate('Home');
+          } else {
+            navigation.navigate('Location', {id: 2});
+          }
+          await AsyncStorage.setItem('token', res.data.SignUp.Token);
+          dispatch({type: 'USER', payload: res.data.SignUp.User});
         }
       })
       .cateh(err => console.log(err));
@@ -90,6 +118,76 @@ export const SignUp = ({navigation}) => {
                 style={LogoStyle}
               />
             </View>
+            <Modal
+              animationType={'pokeman'}
+              transparent={false}
+              transparent={true}
+              visible={modalVisible}
+              onRequestClose={() => {
+                toggleModal();
+              }}>
+              <View
+                style={{
+                  flex: 1,
+                  backgroundColor: 'rgba(0,0,0,0.6)',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}>
+                <View
+                  style={{
+                    height: responsiveHeight(30),
+                    width: responsiveWidth(90),
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    backgroundColor: '#fff',
+                    borderRadius: responsiveHeight(5),
+                  }}>
+                  <View
+                    style={{
+                      height: responsiveHeight(17),
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}>
+                    <Text
+                      style={{
+                        alignSelf: 'center',
+                        fontSize: responsiveFontSize(2.5),
+                        fontFamily:
+                          Platform.OS === 'android' ? 'Muli-Regular' : null,
+                        color: TEXT_COLOR,
+                      }}>
+                      Do you want to use live location?
+                    </Text>
+                  </View>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      height: responsiveHeight(10),
+                      justifyContent: 'space-evenly',
+                      marginHorizontal: responsiveWidth(4),
+                    }}>
+                    <Button
+                      checked
+                      pressme={() => {
+                        toggleModal();
+                        check();
+                      }}>
+                      No
+                    </Button>
+                    <View style={{width: responsiveWidth(5)}} />
+                    <Button
+                      checked
+                      pressme={() => {
+                        toggleModal();
+                        check(1);
+                      }}>
+                      Yes
+                    </Button>
+                  </View>
+                </View>
+              </View>
+            </Modal>
+
             <View style={SocialButtonStyle}>
               <SocialButton image={facebook}>
                 Continue with Facebook
@@ -132,7 +230,6 @@ export const SignUp = ({navigation}) => {
                 <Button
                   checked={btnCOlor}
                   pressme={() => {
-                    check();
                     setLoading(true);
                   }}>
                   Sign Up

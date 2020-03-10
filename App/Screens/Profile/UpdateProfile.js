@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Image,
   KeyboardAvoidingView,
+  Dimensions
 } from 'react-native';
 
 import MyTextField from '../../Common/Input/MyTextField';
@@ -39,6 +40,9 @@ import {ScrollView} from 'react-native-gesture-handler';
 import {useSelector, useDispatch} from 'react-redux';
 import ApiManager from '../../ApiManager/ApiManager';
 import ImagePicker from 'react-native-image-picker';
+import RNFetchBlob from 'react-native-fetch-blob';
+import ImageResizer from 'react-native-image-resizer';
+import AsyncStorage from '@react-native-community/async-storage';
 
 export const UpdateProfile = ({navigation}) => {
   const User = useSelector(state => ({...state.User}));
@@ -48,20 +52,29 @@ export const UpdateProfile = ({navigation}) => {
   const [updateProfile,setProfile]=useState({})
   const dispatch = useDispatch();
   const Email = useSelector(state => ({...state.Root}));
+  const[location,setLocation]=useState('')
 
   const [Picture, setPicture] = useState('');
 
-  check = async () => {
-    new ApiManager().QueryRequest(name, email,Picture).then(res => {
+
+  useEffect(()=>{
+    Done()
+  })
+  const Done=async()=>{
+    let data=await AsyncStorage.getItem('name')
+    setLocation(data)
+  }
+const  check = async () => {
+    new ApiManager().QueryRequest(name,Picture).then(res => {
       if (res) {
         console.log(res);
         dispatch({type: 'UPDATE', payload: res});
         setProfile(res)
-        // navigation.goBack();
+        navigation.goBack();
       }
     });
   };
-  handleChoosePhoto = () => {
+const  handleChoosePhoto = () => {
     var options = {
       title: 'Select Image',
       storageOptions: {
@@ -70,17 +83,23 @@ export const UpdateProfile = ({navigation}) => {
       },
     };
     ImagePicker.showImagePicker(options, response => {
-      console.log('Response = ', response.uri);
-
       if (response.didCancel) {
-        console.log('User cancelled image picker');
       } else if (response.error) {
-        console.log('ImagePicker Error: ', response.error);
       } else if (response.customButton) {
-        console.log('User tapped custom button: ', response.customButton);
       } else {
-        const source = {uri: response.uri};
-        setPicture(source['uri']);
+        console.log('image');
+        ImageResizer.createResizedImage(
+          response['uri'],
+          Dimensions.get('window').width,
+          Dimensions.get('window').height / 3,
+          'JPEG',
+          50,
+        ).then(resizedImage => {
+          console.log('i m resized', resizedImage);
+          RNFetchBlob.fs
+            .readFile(resizedImage.uri, 'base64')
+            .then(res => setPicture(res));
+        });
       }
     });
   };
@@ -112,11 +131,16 @@ export const UpdateProfile = ({navigation}) => {
             <View style={Center}>
               <TouchableOpacity
                 onPress={() => handleChoosePhoto()}
-                style={crossContainerTop}>
+                style={crossContainerTop}>{
+                  User.user.Photo? <Image
+                  style={userImage}
+                  source={{uri:User.user.Photo}}
+                />
+                  :
                 <Image
                   style={userImage}
                   source={require('../../Asset/Bitmap.png')}
-                />
+                />}
                 <View style={crossContainer}>
                   <Entypo
                     name="cross"
@@ -154,7 +178,7 @@ export const UpdateProfile = ({navigation}) => {
                     style={btnImage}
                     source={require('../../Asset/location.png')}
                   />
-                  <Text style={nameLocStyle}>BH - Brazil</Text>
+                  <Text style={nameLocStyle} numberOfLines={1}>{location?location:'BH - Brazil'}</Text>
                   <TouchableOpacity
                     onPress={() => navigation.navigate('Location')}
                     style={changeLocContainer}>

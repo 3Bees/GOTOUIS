@@ -229,7 +229,7 @@ export const Profile = ({navigation}) => {
   ];
 
   const dispatch = useDispatch();
-  const User = useSelector(state => ({...state.User}));console.log(User)
+  const User = useSelector(state => ({...state.User}));
   return (
     <View style={containerStyle}>
       <View style={containerStyle}>
@@ -307,7 +307,7 @@ export const Profile = ({navigation}) => {
                     return (
                       <TouchableOpacity
                         style={TopList}
-                        onPress={() => navigation.navigate('EditDetails',{id:item.item._id})}>
+                        onPress={() => navigation.navigate('EditDetails')}>
                         <View style={flexSix}>
                           <Text style={itemText}>{item.item.Description}</Text>
                           <View style={imageFlatlistContainer}>
@@ -448,7 +448,7 @@ export const Profile = ({navigation}) => {
                       <View>
                           <TouchableOpacity
                             style={TopList}
-                            onPress={() => navigation.navigate('EditDetails',{id:item.item._id})}>
+                            onPress={() => navigation.navigate('EditDetails')}>
                             <View style={flexSix}>
                               <Text style={itemText}>{item.item.Description}</Text>
                               <View style={imageFlatlistContainer}>

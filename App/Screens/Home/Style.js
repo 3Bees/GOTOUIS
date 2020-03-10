@@ -303,7 +303,7 @@ export const containerImage={
 export const interactionText={
   marginLeft: responsiveHeight(2),
   fontFamily: Platform.OS === 'android' ? 'Muli-Bold' : 'Muli',
-  
+  alignSelf:'center',
   color: TEXT_COLOR,
   fontSize: responsiveFontSize(1.4),
   marginVertical: responsiveHeight(0.5),
@@ -491,7 +491,7 @@ export const backIcon = {
   fontFamily: Platform.OS === 'android' ? 'Muli-Regular' : 'Muli',
   fontStyle: 'bold',
 };
-export const backgroundImage = {height: responsiveHeight(27)};
+export const backgroundImage = {height: responsiveHeight(27),width:responsiveWidth(100)};
 export const gradientStyle = {height: responsiveHeight(27),borderBottomLeftRadius:10,borderBottomRightRadius:10};
 export const LookingTopTextContainer = {
   marginVertical: responsiveHeight(1),
@@ -547,6 +547,7 @@ export const imageStyle = {
   height: responsiveHeight(3),
   width: responsiveHeight(3),
   borderRadius: responsiveHeight(3),
+  backgroundColor:COLOR_PRIMARY
 };
 export const imageView = {
   width: responsiveHeight(10),
@@ -618,6 +619,7 @@ export const ListContainer = {
     width: 0,
     height: 1,
   },
+
   shadowOpacity: 0.3,
   shadowRadius: 2.49,
 };

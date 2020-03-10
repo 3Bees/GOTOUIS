@@ -40,6 +40,7 @@ import {LookingFor} from '../Screens/AddPost/LookingFor';
 import {Selling} from '../Screens/AddPost/Selling';
 import {UpdatePost} from '../Screens/AddPost/UpdatePost';
 import {UserProfile} from '../Screens/Profile/UserProfile'
+import AuthLoadingScreen from '../Screens/AuthLoading';
 
 const MainTab = createBottomTabNavigator(
   {
@@ -129,6 +130,7 @@ const MainTab = createBottomTabNavigator(
 
 const AuthStack = createStackNavigator(
   {
+    AuthLoading:AuthLoadingScreen,
     MainTab: MainTab,
     Signin: Signin,
     SignUp: SignUp,
@@ -150,7 +152,7 @@ const AuthStack = createStackNavigator(
     UserProfile:UserProfile
   },
   {
-    initialRouteName: 'Signin',
+    initialRouteName: 'AuthLoading',
     headerMode: 'none',
   },
 );

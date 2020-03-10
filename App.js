@@ -6,6 +6,22 @@
  * @flow
  */
 
+
+
+// async () => {
+//   await ImageResizer.createResizedImage(
+//     response.uri,
+//     Dimensions.get('window').width,
+//     Dimensions.get('window').height / 3,
+//     'JPEG',
+//     50,
+//   ).then(resizedImage => {
+//     this.setState({
+//       ImageName: resizedImage.name,
+//       ImageUrl: resizedImage.uri,
+//     });
+//   });
+
 import React from 'react';
 import {
   SafeAreaView,

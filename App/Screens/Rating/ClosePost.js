@@ -25,8 +25,30 @@ import {
 } from 'react-native-responsive-dimensions';
 import {COLOR_PRIMARY, TEXTINPUT_COLOR} from '../../Resources/Color/Color';
 import {ForgetPasswordView, ForgetPasswordText} from './Style';
+import ApiManager from '../../ApiManager/ApiManager';
 
 export const ClosePost = ({navigation}) => {
+  const [id, setId] = useState(navigation.state.params.id);
+  
+  const [data, setData] = useState({});
+
+  const ClosePost = id => {
+    new ApiManager()
+      .closePost(id)
+      .then(res => console.log(res))
+      .catch(error => console.log(error));
+  };
+  useEffect(() => {
+    if (data.data == undefined) {
+      new ApiManager()
+        .getPostbyId(id)
+        .then(res => {
+          console.log('res', res);
+          setData(res);
+        })
+        .catch(err => console.log(err));
+    }
+  });
   return (
     <View style={Container}>
       <View style={Container2}>
@@ -43,7 +65,7 @@ export const ClosePost = ({navigation}) => {
                 left: responsiveWidth(5),
               },
             ]}
-            onPress={()=>navigation.goBack()}>
+            onPress={() => navigation.goBack()}>
             <Ionicons
               style={TopText}
               name="ios-arrow-back"
@@ -53,23 +75,22 @@ export const ClosePost = ({navigation}) => {
           </TouchableOpacity>
           <View
             style={{
-              marginTop:responsiveHeight(2),
-              marginHorizontal:responsiveWidth(4)
+              marginTop: responsiveHeight(2),
+              marginHorizontal: responsiveWidth(4),
             }}>
             <Text
               style={{
                 fontFamily: Platform.OS === 'android' ? 'Muli-Bold' : 'Muli',
                 fontStyle: 'normal',
                 fontSize: responsiveFontSize(3),
-                
               }}>
-              Close "Apple Cake made from my mom"?
+              {data.data?data.data.Post.Description:'data'}
             </Text>
           </View>
           <View
             style={{
               marginTop: responsiveHeight(1),
-              marginHorizontal:responsiveWidth(4)
+              marginHorizontal: responsiveWidth(4),
             }}>
             <Text
               style={{
@@ -85,7 +106,7 @@ export const ClosePost = ({navigation}) => {
 
           <TouchableOpacity
             style={{
-              marginHorizontal:responsiveWidth(4),
+              marginHorizontal: responsiveWidth(4),
               marginTop: responsiveHeight(4),
               height: responsiveHeight(7),
               borderRadius: responsiveHeight(4),
@@ -94,23 +115,22 @@ export const ClosePost = ({navigation}) => {
               borderWidth: 1,
               borderColor: 'rgba(29, 33, 31, 0.0781523)',
             }}
-            onPress={()=>navigation.navigate('DonateTo')}
-            >
+            onPress={() => navigation.navigate('DonateTo')}>
             <Text
               style={{
                 fontFamily: Platform.OS === 'android' ? 'Muli-Bold' : 'Muli',
                 fontStyle: 'normal',
                 fontSize: responsiveFontSize(2.2),
-                
+
                 color: COLOR_PRIMARY,
                 alignSelf: 'center',
               }}>
               Donated
             </Text>
           </TouchableOpacity>
-          <View
+          <TouchableOpacity
             style={{
-              marginHorizontal:responsiveWidth(4),
+              marginHorizontal: responsiveWidth(4),
               marginTop: responsiveHeight(2),
               height: responsiveHeight(7),
               borderRadius: responsiveHeight(4),
@@ -118,19 +138,21 @@ export const ClosePost = ({navigation}) => {
               alignContent: 'center',
               borderWidth: 1,
               borderColor: 'rgba(29, 33, 31, 0.0781523)',
-            }}>
+            }}
+            onPress={()=>ClosePost(id)}
+            >
             <Text
               style={{
                 fontFamily: Platform.OS === 'android' ? 'Muli-Bold' : 'Muli',
                 fontStyle: 'normal',
                 fontSize: responsiveFontSize(2.2),
-              
+
                 color: COLOR_PRIMARY,
                 alignSelf: 'center',
               }}>
               I gave up to donate
             </Text>
-          </View>
+          </TouchableOpacity>
         </SafeAreaView>
       </View>
     </View>

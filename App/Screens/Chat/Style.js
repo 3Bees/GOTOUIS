@@ -159,6 +159,7 @@ export const imageView = {
   width: responsiveHeight(9),
   marginVertical: responsiveHeight(2),
   alignItems: 'center',
+  backgroundColor:COLOR_PRIMARY
 };
 export const image = {
   width: responsiveWidth(12),

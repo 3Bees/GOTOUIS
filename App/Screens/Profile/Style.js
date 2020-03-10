@@ -153,7 +153,8 @@ export const nameLocStyle={
   fontStyle: 'normal',
   fontSize: responsiveFontSize(2.3),
   fontWeight: 'normal',
-  marginHorizontal:responsiveWidth(3)
+  marginHorizontal:responsiveWidth(3),
+  width:responsiveWidth(40)
 }
 export const changeText={
   fontFamily: Platform.OS === 'android' ? 'Muli-Regular' : 'Muli',

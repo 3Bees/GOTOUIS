@@ -7,10 +7,47 @@ const client = new ApolloClient({
 });
 
 export default class ApiManager {
-  getPostbyId = async () => {
+  postComment = async (post, Comment) => {
+    let query = gql`
+    mutation {
+      CommentCreate(data: { PostId: "${post}", Text: "${Comment}" }) {
+        _id
+        Text
+        User {
+          _id
+          Name
+        }
+        Reply {
+          Text
+          User {
+            _id
+            Name
+          }
+        }
+      }
+    }
+    `;
+    try {
+      let token = await AsyncStorage.getItem('token');
+      let data = await new ApolloClient({
+        uri: 'https://api.gotoapp.io/graphql',
+        headers: {
+          Authorization: `Bearer  ${token}`,
+        },
+      }).mutate({mutation: query});
+      if (data) {
+        return data;
+      }
+      console.log('TCL: login -> data', data);
+    } catch (error) {
+      console.log('Majid', error);
+    }
+  };
+
+  getPostbyId = async postid => {
     let query = gql`
       {
-        Post(PostId: "somepostId") {
+        Post(PostId: "${postid}") {
           _id
           Distance
           Description
@@ -31,7 +68,13 @@ export default class ApiManager {
       }
     `;
     try {
-      let data = await client.query({query});
+      let token = await AsyncStorage.getItem('token');
+      let data = await new ApolloClient({
+        uri: 'https://api.gotoapp.io/graphql',
+        headers: {
+          Authorization: `Bearer  ${token}`,
+        },
+      }).query({query});
       if (data) {
         return data;
       }
@@ -155,14 +198,80 @@ export default class ApiManager {
     }
   };
 
-  closePost = async () => {
+  LikedPost = async postId => {
+    let query = gql`
+    mutation {
+      LikePost(PostId: "${postId}") {
+        Liked
+      }
+    }
+    `;
+    try {
+      let token = await AsyncStorage.getItem('token');
+      let data = await new ApolloClient({
+        uri: 'https://api.gotoapp.io/graphql',
+        headers: {
+          Authorization: `Bearer  ${token}`,
+        },
+      }).mutate({mutation: query});
+      if (data) {
+        return data;
+      }
+      console.log('TCL: login -> data', data);
+    } catch (error) {
+      console.log('Majid', error);
+    }
+  };
+
+  closePost = async id => {
     let query = gql`
       mutation {
-        PostClose(data: {PostId: "5e57ab115cfa1b44995b9062", GaveUp: true})
+        PostClose(data: {PostId: "${id}", GaveUp: "${true}"}){
+          _id
+          Distance
+          Description
+      }
       }
     `;
     try {
-      let data = await clientheader.mutate({mutation: query});
+      let token = await AsyncStorage.getItem('token');
+      let data = await new ApolloClient({
+        uri: 'https://api.gotoapp.io/graphql',
+        headers: {
+          Authorization: `Bearer  ${token}`,
+        },
+      }).mutate({mutation: query});
+      if (data) {
+        return data;
+      }
+      console.log('TCL: login -> data', data);
+    } catch (error) {
+      console.log('Majid', error);
+    }
+  };
+
+  editPost = async (id, Subject, Description, type, lat, long, dist) => {
+    console.log(id, Subject, Description, type, lat, long, dist)
+    let Type = parseInt(type);
+    let price = parseInt(dist);
+    let query = gql`
+    mutation {
+      PostEdit(data: { PostID: "${id}", Subject: "${Subject}", Description: "${Description}", Type:"${Type}",Location: { Lat: "${lat}", Lon: "${long}" }, Price: "${price}"}) {
+        _id
+      Distance
+      Picture
+      Subject
+      }
+    }
+    `;
+    try {
+      let token = await AsyncStorage.getItem('token');
+      let data = await new ApolloClient({
+        uri: 'https://api.gotoapp.io/graphql',
+        headers: {
+          Authorization: `Bearer  ${token}`,
+        },
+      }).mutate({mutation: query});
       if (data) {
         return data;
       }
@@ -190,12 +299,82 @@ export default class ApiManager {
     `;
     try {
       let token = await AsyncStorage.getItem('token');
-    let data = await new ApolloClient({
-      uri: 'https://api.gotoapp.io/graphql',
-      headers: {
-        Authorization: `Bearer  ${token}`,
-      },
-    }).query({query});
+      let data = await new ApolloClient({
+        uri: 'https://api.gotoapp.io/graphql',
+        headers: {
+          Authorization: `Bearer  ${token}`,
+        },
+      }).query({query});
+      if (data) {
+        return data;
+      }
+      console.log('TCL: login -> data', data);
+    } catch (error) {
+      console.log('Majid', error);
+    }
+  };
+  ConversationList = async () => {
+    let query = gql`
+      {
+        Conversations {
+          _id
+          Messages {
+            _id
+            Text
+            Sender {
+              _id
+              Email
+              Name
+              Photo
+            }
+            Status
+            CreatedAt
+          }
+          Participants {
+            _id
+            Name
+            Rating
+            Email
+            Photo
+          }
+        }
+      }
+    `;
+    try {
+      let token = await AsyncStorage.getItem('token');
+      let data = await new ApolloClient({
+        uri: 'https://api.gotoapp.io/graphql',
+        headers: {
+          Authorization: `Bearer  ${token}`,
+        },
+      }).query({query});
+      if (data) {
+        return data;
+      }
+      console.log('TCL: login -> data', data);
+    } catch (error) {
+      console.log('Majid', error);
+    }
+  };
+  userData = async () => {
+    let query = gql`
+    {
+      Profile {
+        _id
+        Name
+        Email
+        Rating
+        Photo
+      }}
+    `;
+    try {
+      let token = await AsyncStorage.getItem('token');
+      let data = await new ApolloClient({
+        uri: 'https://api.gotoapp.io/graphql',
+        headers: {
+          Authorization: `Bearer  ${token}`,
+        },
+      }).query({query});
       if (data) {
         return data;
       }
@@ -205,17 +384,69 @@ export default class ApiManager {
     }
   };
 
-  createPost = async (Subject, Description, price, location, Picture, Type) => {
-    console.log(Subject, Description, Picture, price);
+  getAllPost = async (distance, lat, long) => {
+    console.log(distance,lat,long)
+    let dist = parseInt(distance);
+    let query = gql`
+    {
+      Posts (data: {
+        MaxDistance: ${dist}
+        Location: {
+          Lat: "${lat}"
+          Lon: "${long}"
+        }
+      }){
+        _id
+        Distance
+        Description
+        Price
+        Picture
+        Activated
+        GaveUp
+        Type
+        CreatedAt
+        UpdatedAt
+        User {
+          _id
+          Name
+          Email
+          Photo
+        }
+        Subject
+      }
+    }
+  `;
+    try {
+      let token = await AsyncStorage.getItem('token');
+      let data = await new ApolloClient({
+        uri: 'https://api.gotoapp.io/graphql',
+        headers: {
+          Authorization: `Bearer  ${token}`,
+        },
+      }).query({query});
+      if (data) {
+        console.log("data",data)
+        return data;
+      }
+      console.log('TCL: login -> data', data);
+    } catch (error) {
+      console.log('Majid', error);
+    }
+  }; 
+
+  createPost = async (Subject, Description, price, lat, lng, Picture, Type) => {
+    console.log(Subject, Description, lat, lng);
+
+    let dist = parseInt(price);
     let query = gql`
       mutation {
         PostCreate(
           data: {
             Subject: "${Subject}"
             Description: "${Description}"
-            Price: 12
-            Location: {Lat: "33.30", Lon: "74.245"}
-            Picture: "${Picture}"
+            Price: ${dist}
+            Location: {Lat: "${lat}", Lon: "${lng}"}
+            Picture: "${'data:image/JPEG;base64,' + Picture}"
             Type: "${Type}"
           }
         ) {
@@ -256,6 +487,48 @@ export default class ApiManager {
       console.log('TCL: login -> data', data);
     } catch (error) {
       alert(error);
+    }
+  };
+  Conversation = async chat_id => {
+    console.log(chat_id);
+    let query = gql`
+     {
+      Conversation(ChatId: "${chat_id}") {
+         _id
+          Participants {
+            _id
+            Name
+            Email
+            Photo
+          }
+        Messages {
+          Text
+          Status
+          Sender {
+            _id
+            Name
+            Email
+            Photo
+          }
+        }
+        CreatedAt
+      }
+    }
+  `;
+    try {
+      let token = await AsyncStorage.getItem('token');
+      let data = await new ApolloClient({
+        uri: 'https://api.gotoapp.io/graphql',
+        headers: {
+          Authorization: `Bearer  ${token}`,
+        },
+      }).query({query});
+      if (data) {
+        return data;
+      }
+      console.log('TCL: login -> data', data);
+    } catch (error) {
+      console.log('Majid', error);
     }
   };
 
@@ -263,21 +536,33 @@ export default class ApiManager {
     Subject,
     Description,
     price,
-    location,
+    lat,
+    lng,
     Picture,
     Type,
   ) => {
-    console.log('checker', Subject, Description, Picture, price);
+    let type = parseInt(Type);
+    let dist = parseInt(price);
+    console.log(
+      'checker',
+      Subject,
+      Description,
+      price,
+      lat,
+      lng,
+      Picture,
+      Type,
+    );
     let query = gql`
       mutation {
         PostCreate(
           data: {
             Subject: "${Subject}"
             Description: "${Description}"
-            Price: 
-            Location: {Lat: "33.30", Lon: "74.245"}
-            Picture: "${Picture}"
-            Type: "${Type}"
+            Price: ${dist}
+            Location: {Lat: "${lat}", Lon: "${lng}"}
+            Picture: "${'data:image/JPEG;base64,' + Picture}"
+            Type: ${type}
           }
         ) {
           _id
@@ -320,10 +605,11 @@ export default class ApiManager {
     }
   };
 
-  QueryRequest = async (name, email, photo) => {
+  QueryRequest = async (name, photo) => {
+    console.log(name, photo);
     let query = gql`
   mutation {
-    EditProfile(data: {Name: "${name}"}) {
+    EditProfile(data: {Name: "${name}",Photo:"${'data:image/JPEG;base64,' +photo}"}) {
       _id
       Name
       Rating
@@ -333,6 +619,89 @@ export default class ApiManager {
     }
   }
 `;
+    try {
+      let token = await AsyncStorage.getItem('token');
+      let data = await new ApolloClient({
+        uri: 'https://api.gotoapp.io/graphql',
+        headers: {
+          Authorization: `Bearer  ${token}`,
+        },
+      }).mutate({mutation: query});
+      if (data) {
+        return data;
+      }
+      console.log('TCL: login -> data', data);
+    } catch (error) {
+      alert(error);
+    }
+  };
+
+  CreateConversation = async (c_user_id, p_user_id) => {
+    console.log(c_user_id, p_user_id);
+    let query = gql`
+    mutation {
+      CreateConversation(Participants: ["${c_user_id}", "${p_user_id}"]) {
+        _id
+        Messages {
+          _id
+          Text
+          Status
+          Sender {
+            _id
+            Name
+            Email
+            Photo
+          }
+          CreatedAt
+        }
+        Participants {
+          _id
+          Name
+          Email
+          Photo
+          Rating
+          Badge
+        }
+      }
+    }
+  `;
+    try {
+      let token = await AsyncStorage.getItem('token');
+      let data = await new ApolloClient({
+        uri: 'https://api.gotoapp.io/graphql',
+        headers: {
+          Authorization: `Bearer  ${token}`,
+        },
+      }).mutate({mutation: query});
+      if (data) {
+        return data;
+      }
+      console.log('TCL: login -> data', data);
+    } catch (error) {
+      alert(error);
+    }
+  };
+
+  SendMsg = async (chat_id, msg) => {
+    let query = gql`
+    mutation {
+      SendMessage(data: {
+        ChatId: "${chat_id}"
+        Text: "${msg}"
+      }) {
+         _id
+        Text
+        Status
+        Sender {
+          _id
+          Name
+          Email
+          Rating
+        }
+        CreatedAt
+      }
+    }
+  `;
     try {
       let token = await AsyncStorage.getItem('token');
       let data = await new ApolloClient({

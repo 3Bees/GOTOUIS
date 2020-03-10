@@ -8,6 +8,8 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   ActivityIndicator,
+  Modal,
+  Platform,
 } from 'react-native';
 import MyTextField from '../../Common/Input/MyTextField';
 import SocialButton from '../../Common/SocialButton/SocialButton';
@@ -22,13 +24,16 @@ import {
   LineText,
   ContainerInput,
   ButtonStyle,
-  Container2,
   AppNameDesView,
   LogoStyle,
   Container3,
 } from '../SignUp/Style';
 import {ForgetPasswordView, ForgetPasswordText} from './Style';
-import {responsiveHeight} from 'react-native-responsive-dimensions';
+import {
+  responsiveHeight,
+  responsiveWidth,
+  responsiveFontSize,
+} from 'react-native-responsive-dimensions';
 import {ScrollView} from 'react-native-gesture-handler';
 import {
   LoginManager,
@@ -40,7 +45,8 @@ import {GoogleSignin, statusCodes} from '@react-native-community/google-signin';
 import {useSelector, useDispatch} from 'react-redux';
 import ApiManager from '../../ApiManager/ApiManager';
 import AsyncStorage from '@react-native-community/async-storage';
-import {COLOR_PRIMARY} from '../../Resources/Color/Color';
+import {COLOR_PRIMARY, TEXT_COLOR} from '../../Resources/Color/Color';
+import Geolocation from '@react-native-community/geolocation';
 
 export const Signin = ({navigation}) => {
   const facebook = require('../../Asset/images.png');
@@ -50,6 +56,7 @@ export const Signin = ({navigation}) => {
   const [btnCOlor, setbtnColor] = useState(false);
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
+  const [modalVisible, setmodalVisible] = useState(false);
   const Email = useSelector(state => ({...state.Root}));
 
   useEffect(() => {
@@ -60,8 +67,24 @@ export const Signin = ({navigation}) => {
         '40728088234-s1g5aufu1fuill5cen29h1qcj9vtm9jj.apps.googleusercontent.com',
       offlineAccess: true, // client ID of type WEB for your server (needed to verify user ID and offline access)
     });
+    getCurrentPosition();
   });
+  const toggleModal = () => {
+    setmodalVisible(!modalVisible);
+  };
 
+  const getCurrentPosition = async () => {
+    Geolocation.getCurrentPosition(async position => {
+      await AsyncStorage.setItem(
+        'lat',
+        JSON.stringify(position.coords.latitude),
+      );
+      await AsyncStorage.setItem(
+        'lon',
+        JSON.stringify(position.coords.longitude),
+      );
+    });
+  };
   const _responseInfoCallback = (error, result) => {
     if (error) {
       alert('Error fetching data: ' + error.toString());
@@ -71,7 +94,7 @@ export const Signin = ({navigation}) => {
     }
   };
 
-  signIn = async () => {
+  const  signIn = async () => {
     try {
       await GoogleSignin.hasPlayServices();
       const userInfo = await GoogleSignin.signIn();
@@ -89,7 +112,7 @@ export const Signin = ({navigation}) => {
     }
   };
 
-  loginFacebook = async () => {
+  const  loginFacebook = async () => {
     try {
       let result = await LoginManager.logInWithPermissions([
         'public_profile',
@@ -114,7 +137,7 @@ export const Signin = ({navigation}) => {
     }
   };
 
-  callback = token => {
+  const  callback = token => {
     // console.log(
     //   token,
     //   new GraphRequestManager().addRequest(infoRequest).start(),
@@ -135,7 +158,8 @@ export const Signin = ({navigation}) => {
     new GraphRequestManager().addRequest(infoRequest).start();
   };
 
-  check = async () => {
+const  check = async yes => {
+    getCurrentPosition();
     new ApiManager()
       .SignIn(email, password)
       .then(async res => {
@@ -144,10 +168,17 @@ export const Signin = ({navigation}) => {
           dispatch({type: 'USER', payload: res.data.SignIn.User});
           AsyncStorage.setItem('token', res.data.SignIn.Token);
           setLoading(false);
-          navigation.navigate('Location', {id: 2});
+          if (yes) {
+            navigation.navigate('Home');
+          } else {
+            navigation.navigate('Location', {id: 2});
+          }
         }
       })
-      .catch(err => alert(err));
+      .catch(err => {
+        setLoading(false);
+        alert(err);
+      });
   };
 
   return (
@@ -173,6 +204,77 @@ export const Signin = ({navigation}) => {
                 style={LogoStyle}
               />
             </View>
+
+            <Modal
+              animationType={'pokeman'}
+              transparent={false}
+              transparent={true}
+              visible={modalVisible}
+              onRequestClose={() => {
+                toggleModal();
+              }}>
+              <View
+                style={{
+                  flex: 1,
+                  backgroundColor: 'rgba(0,0,0,0.6)',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}>
+                <View
+                  style={{
+                    height: responsiveHeight(30),
+                    width: responsiveWidth(90),
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    backgroundColor: '#fff',
+                    borderRadius: responsiveHeight(5),
+                  }}>
+                  <View
+                    style={{
+                      height: responsiveHeight(17),
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}>
+                    <Text
+                      style={{
+                        alignSelf: 'center',
+                        fontSize: responsiveFontSize(2.5),
+                        fontFamily:
+                          Platform.OS === 'android' ? 'Muli-Regular' : null,
+                        color: TEXT_COLOR,
+                      }}>
+                      Do you want to use live location?
+                    </Text>
+                  </View>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      height: responsiveHeight(10),
+                      justifyContent: 'space-evenly',
+                      marginHorizontal: responsiveWidth(4),
+                    }}>
+                    <Button
+                      checked
+                      pressme={() => {
+                        toggleModal();
+                        check();
+                      }}>
+                      No
+                    </Button>
+                    <View style={{width: responsiveWidth(5)}} />
+                    <Button
+                      checked
+                      pressme={() => {
+                        toggleModal();
+                        check(1);
+                      }}>
+                      Yes
+                    </Button>
+                  </View>
+                </View>
+              </View>
+            </Modal>
+
             <View style={SocialButtonStyle}>
               <SocialButton image={facebook} pressme={() => loginFacebook()}>
                 Continue with Facebook
@@ -213,8 +315,8 @@ export const Signin = ({navigation}) => {
                 <Button
                   checked={btnCOlor}
                   pressme={() => {
-                    check();
                     setLoading(true);
+                    toggleModal();
                   }}>
                   Sign In
                 </Button>

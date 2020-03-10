@@ -8,11 +8,15 @@ import {
   TouchableOpacity,
   TextInput,
   KeyboardAvoidingView,
+  ScrollView,
+  Dimensions,
 } from 'react-native';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MyTextField from '../../Common/Input/MyTextField';
-import SocialButton from '../../Common/SocialButton/SocialButton';
+import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
+import SearchInput, {createFilter} from 'react-native-search-filter';
+
 import Button from '../../Common/Button/Button';
 import {
   Container,
@@ -38,6 +42,8 @@ import {
   responsiveFontSize,
   responsiveWidth,
 } from 'react-native-responsive-dimensions';
+import RNFetchBlob from 'react-native-fetch-blob';
+import ImageResizer from 'react-native-image-resizer';
 import {
   COLOR_PRIMARY,
   TEXTINPUT_COLOR,
@@ -48,9 +54,10 @@ import {
 import Entypo from 'react-native-vector-icons/Entypo';
 import {ForgetPasswordView, ForgetPasswordText} from './Style';
 import {Rating, AirbnbRating} from 'react-native-ratings';
-import {ScrollView} from 'react-native-gesture-handler';
 import ImagePicker from 'react-native-image-picker';
 import ApiManager from '../../ApiManager/ApiManager';
+
+const KEYS_TO_FILTERS = ['display_name'];
 
 export const Favour = ({navigation}) => {
   const [rating, setrating] = useState(0);
@@ -61,10 +68,51 @@ export const Favour = ({navigation}) => {
   const [location, setLoction] = useState('');
   const [Picture, setPicture] = useState('');
 
+  const [search, setSearch] = useState('');
+  const [id, setId] = useState('');
+  const [data, setData] = useState([]);
+  const [visible, setVisible] = useState(false);
+  const [lat, setLat] = useState('');
+  const [lng, setLng] = useState('');
+
+
+  useEffect(()=>{
+    if(!location){
+      locat()
+    }
+  })
+
+  const locat=async()=>{
+    let data=await AsyncStorage.getItem('name')
+    setLoction(data)
+  }
+
+  const saveData = async item => {
+    setLat(item.lat);
+    setLng(item.lon);
+  };
+  const searchUpdated = text => {
+    setSearch(text);
+    var requestOptions = {
+      method: 'POST',
+      redirect: 'follow',
+    };
+
+    fetch(
+      `https://nominatim.openstreetmap.org/search?city=${text}&format=json`,
+      requestOptions,
+    )
+      .then(response => response.text())
+      .then(msgs => {
+        setData([JSON.parse(msgs)]);
+      })
+      .catch(error => alert('error', error));
+  };
+
   check = () => {
     console.log('i m here');
     new ApiManager()
-      .createPost(title, Description, 12, location, Picture, 'Favour')
+      .createPost(title, Description, 12, lat,lng, Picture, 'Favour')
       .then(res => {
         if (res) {
           navigation.goBack();
@@ -74,7 +122,7 @@ export const Favour = ({navigation}) => {
       .catch(err => alert(err));
   };
 
-  handleChoosePhoto = () => {
+  const handleChoosePhoto = () => {
     var options = {
       title: 'Select Image',
       storageOptions: {
@@ -83,21 +131,29 @@ export const Favour = ({navigation}) => {
       },
     };
     ImagePicker.showImagePicker(options, response => {
-      console.log('Response = ', response.uri);
-
       if (response.didCancel) {
-        console.log('User cancelled image picker');
       } else if (response.error) {
-        console.log('ImagePicker Error: ', response.error);
       } else if (response.customButton) {
-        console.log('User tapped custom button: ', response.customButton);
       } else {
-        const source = {uri: response.uri};
-        setPicture(source["uri"]);
+        console.log('image');
+        ImageResizer.createResizedImage(
+          response['uri'],
+          Dimensions.get('window').width,
+          Dimensions.get('window').height / 3,
+          'JPEG',
+          50,
+        ).then(resizedImage => {
+          console.log('i m resized', resizedImage);
+          RNFetchBlob.fs
+            .readFile(resizedImage.uri, 'base64')
+            .then(res => setPicture(res));
+        });
       }
     });
   };
   //   console.log(btnCOlor);
+  const Arr_Location = data.filter(createFilter(search, KEYS_TO_FILTERS));
+
   return (
     <ScrollView style={Container}>
       <KeyboardAvoidingView behavior="padding" enabled>
@@ -166,12 +222,75 @@ export const Favour = ({navigation}) => {
                   size={responsiveFontSize(4)}
                   color={COLOR_PRIMARY}
                 />
-                <TextInput
-                  placeholder="Search Location"
-                  style={{margin: 0, padding: 0}}
-                />
+                {!visible ? (
+                  <View>
+                    {search ? (
+                      <TouchableOpacity onPress={() => setVisible(true)}>
+                        <Text
+                          numberOfLines={1}
+                          style={{width: responsiveWidth(60)}}>
+                          {search}
+                        </Text>
+                      </TouchableOpacity>
+                    ) : (
+                      <TouchableOpacity onPress={() => setVisible(true)}>
+                        <Text>{location?location:'Search Location'}</Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                ) : (
+                  <SearchInput
+                    onChangeText={term => {
+                      searchUpdated(term);
+                    }}
+                    placeholder={location?location:"Search Location"}
+                    onFocus={() => setVisible(true)}
+                  />
+                )}
               </View>
             </View>
+            {search.length > 0 && visible ? (
+              <ScrollView
+                style={{
+                  height: '40%',
+                  zIndex: 1,
+                  top: responsiveHeight(48),
+                  position: 'absolute',
+                  backgroundColor: 'red',
+                }}>
+                {data.length > 0
+                  ? Arr_Location.map(item => {
+                      return item.map(item => {
+                        return (
+                          <TouchableOpacity
+                            style={{
+                              padding: 20,
+                              backgroundColor: 'white',
+                              flexDirection: 'row',
+                              borderBottomColor: 'black',
+                              borderBottomWidth: 1,
+                            }}
+                            onPress={() => {
+                              saveData(item);
+                              setSearch(item.display_name);
+                              setVisible(false);
+                            }}>
+                            <SimpleLineIcons
+                              name="location-pin"
+                              size={responsiveFontSize(2.5)}
+                              color={COLOR_PRIMARY}
+                              style={{
+                                marginRight: responsiveWidth(4),
+                              }}
+                            />
+                            <Text>{item.display_name}</Text>
+                          </TouchableOpacity>
+                        );
+                      });
+                    })
+                  : null}
+              </ScrollView>
+            ) : null}
             <TouchableOpacity
               onPress={() => handleChoosePhoto()}
               style={ViewStyleImage}>

@@ -91,7 +91,7 @@ export const btnText={
   fontFamily: Platform.OS === 'android' ? 'Muli-Regular' : null,
   
   fontSize: responsiveFontSize(2.2),
-  
+  width:responsiveWidth(60),
   color:'black'
 }
 export const btnImage={
