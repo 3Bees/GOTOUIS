@@ -31,13 +31,14 @@ import Button from '../../Common/Button/Button';
 import {
   responsiveHeight,
   responsiveWidth,
+  responsiveFontSize,
 } from 'react-native-responsive-dimensions';
 import {ScrollView} from 'react-native-gesture-handler';
 
 import ApolloClient from 'apollo-boost';
 import {gql} from 'apollo-boost';
 import ApiManager from '../../ApiManager/ApiManager';
-import {COLOR_PRIMARY} from '../../Resources/Color/Color';
+import {COLOR_PRIMARY, TEXT_COLOR} from '../../Resources/Color/Color';
 import AsyncStorage from '@react-native-community/async-storage';
 import {useSelector, useDispatch} from 'react-redux';
 import Geolocation from '@react-native-community/geolocation';
@@ -231,6 +232,7 @@ export const SignUp = ({navigation}) => {
                   checked={btnCOlor}
                   pressme={() => {
                     setLoading(true);
+                    toggleModal()
                   }}>
                   Sign Up
                 </Button>
