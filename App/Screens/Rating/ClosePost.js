@@ -32,7 +32,7 @@ export const ClosePost = ({navigation}) => {
   
   const [data, setData] = useState({});
 
-  const ClosePost = id => {
+  const closePost = id => {
     new ApiManager()
       .closePost(id)
       .then(res => console.log(res))
@@ -115,7 +115,7 @@ export const ClosePost = ({navigation}) => {
               borderWidth: 1,
               borderColor: 'rgba(29, 33, 31, 0.0781523)',
             }}
-            onPress={() => navigation.navigate('DonateTo')}>
+            onPress={() => navigation.navigate('DonateTo',{id:id})}>
             <Text
               style={{
                 fontFamily: Platform.OS === 'android' ? 'Muli-Bold' : 'Muli',
@@ -139,7 +139,7 @@ export const ClosePost = ({navigation}) => {
               borderWidth: 1,
               borderColor: 'rgba(29, 33, 31, 0.0781523)',
             }}
-            onPress={()=>ClosePost(id)}
+            onPress={()=>closePost(id)}
             >
             <Text
               style={{

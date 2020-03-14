@@ -37,7 +37,7 @@ export const Notification = ({navigation}) => {
   const [notification, setNotification] = useState([]);
   const [checker,setChecker]=useState(false)
   useEffect(() => {
-    if(checker){
+    if(checker==false){
     new ApiManager()
       .notification()
       .then(res => {
@@ -105,32 +105,34 @@ export const Notification = ({navigation}) => {
         {notification.length>0 ? (
           <FlatList
             style={{marginTop: responsiveHeight(2)}}
-            data={data}
+            data={notification}
             keyExtractor={item => item.id}
             renderItem={(item, index) => {
+              console.log("item",item.item.Participant.Name)
               return (
                 <TouchableOpacity
                   style={Container2}
-                  onPress={() => navigation.navigate(item.item.route)}>
-                  {item.item.image ? (
+                  onPress={() => navigation.navigate('EditDetails',{id:item.item.ResourceId})}
+                  >
+                  {/* {item.item.image ? ( */}
                     <View style={ViewPad}>
                       <View style={imageView}>
                         <Image source={item.item.image} style={image} />
                       </View>
                       <Text style={TextContainer}>
-                        <Text style={Username}>{item.item.name}</Text>{' '}
-                        <Text style={TextComment}>{item.item.text}</Text>{' '}
+                        <Text style={Username}>{item.item.Participant.Name?item.item.Participant.Name:'name'}</Text>{' '}
+                        <Text style={TextComment}>{item.item.Text}</Text>{' '}
                         <Text style={Time}>10:32</Text>
                       </Text>
                     </View>
-                  ) : (
+                  {/* ) : (
                     <View style={ViewPad}>
                       <Text style={TextContainer2}>
                         <Text style={TextComment}>{item.item.text}</Text>{' '}
                         <Text style={Time}>10:32</Text>
                       </Text>
                     </View>
-                  )}
+                  )} */}
                 </TouchableOpacity>
               );
             }}

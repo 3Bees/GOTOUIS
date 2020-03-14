@@ -58,6 +58,7 @@ import Entypo from 'react-native-vector-icons/Entypo';
 import {ForgetPasswordView, ForgetPasswordText} from './Style';
 import {Rating, AirbnbRating} from 'react-native-ratings';
 import SearchInput, {createFilter} from 'react-native-search-filter';
+import AsyncStorage from '@react-native-community/async-storage';
 
 
 
@@ -92,6 +93,9 @@ export const Selling = ({navigation}) => {
   const saveData = async item => {
     setLat(item.lat);
     setLng(item.lon);
+    await AsyncStorage.setItem('lat', item.lat);
+    await AsyncStorage.setItem('lon', item.lon);
+    await AsyncStorage.setItem('name', item.display_name);
   };
   const searchUpdated = text => {
     setSearch(text);
@@ -111,13 +115,15 @@ export const Selling = ({navigation}) => {
       .catch(error => alert('error', error));
   };
 
-  check = () => {
+  const check = async() => {
     console.log('i m here');
+    let lat = await AsyncStorage.getItem('lat');
+    let lng = await AsyncStorage.getItem('lon');
     new ApiManager()
       .createPostPrice(title, Description, 12, lat,lng, Picture, '2')
       .then(res => {
         if (res) {
-          navigation.goBack();
+          navigation.navigate("Home");
         }
         console.log(res);
       })

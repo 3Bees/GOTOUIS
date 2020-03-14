@@ -103,10 +103,14 @@ import ApiManager from '../../ApiManager/ApiManager';
 export const Profile = ({navigation}) => {
   const [dataa, setData] = useState([]);
 
+  const [dataaa,setDataa]=useState(false)
   const [loading, setLoading] = useState(true);
   const [do_data,setDoData]=useState([])
+  const [favour,setFavour]=useState([])
+  const [sell,setSell]=useState([])
+  const [lookingfor,setLookingFor]=useState([])
   useEffect(() => {
-    if(dataa==undefined){
+      if(dataaa==false){
       Data();}
     
   });
@@ -114,122 +118,50 @@ export const Profile = ({navigation}) => {
     let lat = await AsyncStorage.getItem('lat');
     let long = await AsyncStorage.getItem('lon');
     let UserPost = [];
-    let DonationPost=[]
+    let DonationPost=[];
+    let FavourPost=[];
+    
+    let SellPost=[];
+    let LookingForPost=[];
     new ApiManager()
       .getAllPost('0', lat, long)
       .then(res => {
-        if (User) {
+        setDataa(true)
+          console.log("user",res)
           res.data.Posts.map(item => {
             if (item.User._id == User.user._id) {
               UserPost.push(item);
               if(item.Type==0){
                 DonationPost.push(item)
               }
-             
+              else if(item.Type==1){
+                FavourPost.push(item)
+              }
+              else if(item.Type==2){
+                SellPost.push(item)
+              }
+              else{
+                LookingForPost.push(item)
+              }
             }
-          });
+          })
+          setSell(SellPost)
+          setLookingFor(LookingForPost)
+          setFavour(FavourPost)
           setDoData(DonationPost)
           setData(UserPost);
-        }
+        
         setLoading(false);
       })
       .catch(err => {
+        setDataa(true)
         setLoading(false);
       });
   };
-  let data = [
-    {
-      id: 3,
-      image: 'https://bootdey.com/img/Content/avatar/avatar7.png',
-      name: 'March SoulLaComa',
-      text: 'Apple cake made by Mom',
-      status: 'Donation',
-      itemImage: require('../../Asset/cake.png'),
-    },
-    {
-      id: 2,
-      name: 'John DoeLink',
-      text: 'Help me to change my wardobe',
-      status: 'Favour',
-      itemImage: require('../../Asset/wardrobe.png'),
-    },
-    {
-      id: 3,
-      name: 'John DoeLink',
-      text: 'Want to sell my favorite Guitar',
-      status: 'Sell',
-      itemImage: require('../../Asset/guiter.png'),
-    },
-  ];
-  let data2 = [
-    {
-      id: 1,
-      image: 'https://bootdey.com/img/Content/avatar/avatar7.png',
-      name: 'March SoulLaComa',
-      text: 'Apple cake made by Mom',
-      status: 'Donation',
-      itemImage: require('../../Asset/cake.png'),
-    },
-    {
-      id: 2,
-      name: 'John DoeLink',
-      text: 'Help me to change my wardobe',
-      status: 'Favour',
-      itemImage: require('../../Asset/wardrobe.png'),
-    },
-    {
-      id: 3,
-      name: 'John Link',
-      text: 'Help me to change my wardobe',
-      status: 'Favour',
-      itemImage: require('../../Asset/wardrobe.png'),
-    },
-    {
-      id: 4,
-      name: 'Doe Link',
-      text: 'Help me to change my wardobe',
-      status: 'Favour',
-      itemImage: require('../../Asset/wardrobe.png'),
-    },
-    {
-      id: 5,
-      name: 'Johnny yo Link',
-      text: 'Help me to change my wardobe',
-      status: 'Favour',
-      itemImage: require('../../Asset/wardrobe.png'),
-    },
-    {
-      id: 6,
-      name: 'John Do',
-      text: 'Help me to change my wardobe',
-      status: 'Favour',
-      itemImage: require('../../Asset/wardrobe.png'),
-    },
-    {
-      id: 7,
-      name: 'Link',
-      text: 'Help me to change my wardobe',
-      status: 'Favour',
-      itemImage: require('../../Asset/wardrobe.png'),
-    },
-    {
-      id: 8,
-      name: 'John',
-      text: 'Help me to change my wardobe',
-      status: 'Favour',
-      itemImage: require('../../Asset/wardrobe.png'),
-    },
-    {
-      id: 9,
-      name: 'Jo eLink',
-      text: 'Help me to change my wardobe',
-      status: 'Favour',
-      itemImage: require('../../Asset/wardrobe.png'),
-    },
-  ];
-
+ 
+  
   const dispatch = useDispatch();
-  const User = useSelector(state => ({...state.User}));console.log(User)
+  const User = useSelector(state => ({...state.User}));
   return (
     <View style={containerStyle}>
       <View style={containerStyle}>
@@ -303,7 +235,6 @@ export const Profile = ({navigation}) => {
                   data={dataa}
                   keyExtractor={item => item.id}
                   renderItem={(item, index) => {
-                    console.log(item)
                     return (
                       <TouchableOpacity
                         style={TopList}
@@ -512,21 +443,20 @@ export const Profile = ({navigation}) => {
                 heading={
                   <TabHeading style={colorHeader}>
                     <View style={directionCol}>
-                      <Text style={alignCenter}>1</Text>
+                      <Text style={alignCenter}>{favour?favour.length:0}</Text>
                       <Text style={textstyl2}>Favours</Text>
                     </View>
                   </TabHeading>
                 }
                 textStyle={{color: '#fff'}}
                 activeTextStyle={textActive}>
-                <FlatList
+               {favour? <FlatList
                   style={flatListTop}
-                  data={data}
+                  data={favour}
                   keyExtractor={item => item.id}
-                  renderItem={(item, index) => {
+                  renderItem={(item, index) => {console.log("item",item)
                     return (
                       <View>
-                        {item.item.status == 'Favour' ? (
                           <View style={{}}>
                             <View style={[TopList]}>
                               <View
@@ -539,12 +469,12 @@ export const Profile = ({navigation}) => {
                                     itemText,
                                     {color: 'rgba(0,0,0,0.5)'},
                                   ]}>
-                                  {item.item.text}
+                                  {item.item.Description}
                                 </Text>
                                 <View style={imageFlatlistContainer}>
                                   <Image
                                     style={[imageFlatlist]}
-                                    source={{uri: item.item.image}}
+                                    source={{uri: item.item.User.Photo}}
                                   />
                                   <Text
                                     style={[
@@ -554,14 +484,13 @@ export const Profile = ({navigation}) => {
                                           'rgba(255,255,255,0.5)',
                                       },
                                     ]}>
-                                    {item.item.name}
+                                    {item.item.User.Name}
                                   </Text>
                                 </View>
                               </View>
                               <ImageBackground
-                                source={item.item.itemImage}
+                                source={{uri:item.item.Picture}}
                                 style={flexfour}>
-                                {item.item.status == 'Favour' ? (
                                   <View
                                     style={{
                                       flex: 1,
@@ -573,7 +502,7 @@ export const Profile = ({navigation}) => {
                                         {backgroundColor: COLOR_FAVOUR},
                                       ]}>
                                       <Text style={statusText}>
-                                        {item.item.status}
+                                        {'Favour'}
                                       </Text>
                                     </View>
                                     <View style={StylePinContainer}>
@@ -588,48 +517,46 @@ export const Profile = ({navigation}) => {
                                       </Text>
                                     </View>
                                   </View>
-                                ) : null}
+                                
                               </ImageBackground>
                             </View>
                           </View>
-                        ) : null}
-                      </View>
+                        </View>
                     );
                   }}
-                />
+                />:null}
               </Tab>
               <Tab
                 heading={
                   <TabHeading style={colorHeader}>
                     <View style={directionCol}>
-                      <Text style={alignCenter}>1</Text>
+                      <Text style={alignCenter}>{sell?sell.length:0}</Text>
                       <Text style={textstyl2}>Sells</Text>
                     </View>
                   </TabHeading>
                 }
                 textStyle={{color: '#fff'}}
                 activeTextStyle={textActive}>
-                <FlatList
+               { sell?<FlatList
                   style={flatListTop}
-                  data={data}
+                  data={sell}
                   keyExtractor={item => item.id}
                   renderItem={(item, index) => {
                     return (
                       <View>
-                        {item.item.status == 'Sell' ? (
                           <View style={TopList}>
                             <View style={flexSix}>
-                              <Text style={itemText}>{item.item.text}</Text>
+                              <Text style={itemText}>{item.item.Description}</Text>
                               <View style={imageFlatlistContainer}>
                                 <Image
                                   style={imageFlatlist}
-                                  source={{uri: item.item.image}}
+                                  source={{uri: item.item.User.Photo}}
                                 />
-                                <Text style={nameItem}>{item.item.name}</Text>
+                                <Text style={nameItem}>{item.item.User.Name}</Text>
                               </View>
                             </View>
                             <ImageBackground
-                              source={item.item.itemImage}
+                              source={{uri:item.item.Picture}}
                               style={flexfour}>
                               <View>
                                 <View
@@ -638,7 +565,7 @@ export const Profile = ({navigation}) => {
                                     {backgroundColor: COLOR_SELL},
                                   ]}>
                                   <Text style={statusText}>
-                                    {item.item.status}
+                                    {item.item.Price}
                                   </Text>
                                 </View>
                                 <View
@@ -670,29 +597,35 @@ export const Profile = ({navigation}) => {
                               </View>
                             </ImageBackground>
                           </View>
-                        ) : null}
+                       
                       </View>
                     );
                   }}
-                />
+                />:null}
               </Tab>
               <Tab
                 heading={
                   <TabHeading style={colorHeader}>
                     <View style={directionCol}>
-                      <Text style={alignCenter}>1</Text>
+                      <Text style={alignCenter}>{lookingfor?lookingfor.length:0}</Text>
                       <Text style={textstyl2}>Looking For</Text>
                     </View>
                   </TabHeading>
                 }
                 textStyle={{color: '#fff'}}
                 activeTextStyle={textActive}>
-                <View style={{flex: 1, backgroundColor: '#fcfdfd'}}>
+                {
+                  lookingfor?<FlatList
+                  data={lookingfor}
+                  keyExtractor={item => item.id}
+                  renderItem={(item, index) => {
+                    return (
+                      <View style={{flex: 1, backgroundColor: '#fcfdfd'}}>
                   <View style={lookingTop}>
                     <View style={lookingName}>
-                      <Text style={gymText}>Gymmate</Text>
+                      <Text style={gymText}>{item.item.Subject}</Text>
                       <Text style={textstyl3}>
-                        Looking for a mate to workout togather
+                       {item.item.Description}
                       </Text>
                     </View>
                     <View style={ContainerLookingStyle}>
@@ -705,9 +638,9 @@ export const Profile = ({navigation}) => {
                         marginVertical: responsiveHeight(2),
                       }}>
                       <View style={{flexDirection: 'row'}}>
-                        <Image style={imageFlatlist2} />
+                        <Image style={imageFlatlist2}  source={{uri:item.item.User.Photo}}/>
                         <View>
-                          <Text style={nameItem}>Jequeline Robinson</Text>
+                          <Text style={nameItem}>{item.item.User.Name}</Text>
                           <View style={starRatingViewlook}>
                             <Entypo
                               name="star"
@@ -741,7 +674,10 @@ export const Profile = ({navigation}) => {
                     </View>
                   </View>
                 </View>
-              </Tab>
+                    )}}/>
+                    :null
+                }
+               </Tab>
             </Tabs>
           </Container>
         </SafeAreaView>

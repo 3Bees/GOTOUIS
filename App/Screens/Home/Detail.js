@@ -11,6 +11,7 @@ import {
   KeyboardAvoidingView,
   TouchableHighlight,
   ActivityIndicator,
+  ScrollView,
 } from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -85,6 +86,8 @@ import {
 } from '../../Resources/Color/Color';
 import {ViewButtonContainer, textInputField, SendButton} from '../Chat/Style';
 import ApiManager from '../../ApiManager/ApiManager';
+import AsyncStorage from '@react-native-community/async-storage';
+import * as geolib from 'geolib';
 
 export const Detail = ({navigation}) => {
   const User = useSelector(state => ({...state.User}));
@@ -92,18 +95,52 @@ export const Detail = ({navigation}) => {
   const [focusState, setFocusState] = useState(false);
   const [id, setId] = useState(navigation.state.params.id);
   const [data, setData] = useState({});
+  const [name, setName] = useState('');
+  const [load, setload] = useState(false);
+  const [location, setLocation] = useState('');
   console.log('User', User.user._id);
   useEffect(() => {
-    if (data.data == undefined) {
-      new ApiManager()
-        .getPostbyId(id)
-        .then(res => {
-          console.log('res', res);
-          setData(res);
-        })
-        .catch(err => console.log(err));
+    const isFocused = navigation.isFocused();
+
+    if (load == false) {
+      postData();
     }
-  });
+    const navFocusListener = navigation.addListener('didFocus', () => {
+      // do some API calls here
+      postData();
+    });
+
+    return () => {
+      navFocusListener.remove();
+    };
+  }, []);
+
+  const postData = async () => {
+    let lat = await AsyncStorage.getItem('lat');
+    let long = await AsyncStorage.getItem('lon');
+    new ApiManager()
+      .getPostbyId(id)
+      .then(res => {
+        let distance = geolib.getPreciseDistance(
+          {latitude: lat, longitude: long},
+          {
+            latitude: res.data.Post.Location.Lat,
+            longitude: res.data.Post.Location.Lon,
+          },
+        );
+        setLocation(geolib.convertDistance(distance, 'km').toFixed(2));
+        console.log('res', geolib.convertDistance(distance, 'km').toFixed(2));
+
+        setData(res);
+        setload(true);
+      })
+      .catch(err => {
+        alert(err);
+        setload(true);
+      }),
+      [id];
+  };
+
   const CreateConversation = id => {
     console.log(id);
     new ApiManager()
@@ -113,8 +150,8 @@ export const Detail = ({navigation}) => {
         if (res.data) {
           navigation.navigate('Inbox', {
             id: res.data.CreateConversation._id,
-            sender:User.user._id,
-            receiver:id,
+            sender: User.user._id,
+            receiver: id,
           });
         }
       })
@@ -144,7 +181,8 @@ export const Detail = ({navigation}) => {
         barStyle="light-content"
         translucent
         backgroundColor={'transparent'}
-      />{console.log("data.data",data.data)}
+      />
+      {console.log('data.data', data.data)}
       {data.data == undefined ? (
         <ActivityIndicator
           size={'large'}
@@ -152,203 +190,216 @@ export const Detail = ({navigation}) => {
           style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}
         />
       ) : (
-          <ParallaxScrollView
-            backgroundColor="white"
-            contentBackgroundColor="#ffffff"
-            stickyHeaderHeight={responsiveHeight(8)}
-            parallaxHeaderHeight={responsiveHeight(27)}
-            renderForeground={() => (
-              <ImageBackground
-                source={{uri: data.data.Post.Picture}}
-                resizeMode="stretch"
-                style={backgroundImage}>
-                <LinearGradient
-                  colors={['rgba(29, 33, 31, 0.0001)', 'rgba(29, 33, 31, 0.5)']}
-                  style={gradientStyle}
-                  start={{x: 1, y: 1}}
-                  end={{x: 0, y: 0}}>
-                  <TouchableOpacity
-                    style={donateTextView1}
-                    onPress={() => navigation.goBack()}>
-                    <Ionicons
-                      style={backIcon}
-                      name="ios-arrow-back"
-                      size={responsiveFontSize(5)}
-                      color="white"
-                    />
-                  </TouchableOpacity>
-                  <View style={imagePencil}>
-                    <TouchableOpacity style={favoriteIconView1}>
-                      <AntDesign
-                        name="hearto"
-                        size={responsiveFontSize(3)}
-                        color="#fff"
-                        onPress={() => LikedPost(data.data.Post._id)}
-                      />
-                    </TouchableOpacity>
-                    <TouchableOpacity style={shareIconView1}>
-                      <Feather
-                        style={shareIcon}
-                        name="share-2"
-                        size={responsiveFontSize(5)}
-                        color="#fff"
-                      />
-                    </TouchableOpacity>
-                  </View>
-                  <TouchableOpacity
-                    style={containerDonation}
-                    onPress={() => navigation.navigate('EditDetails',{id:data.data.Post._id})}>
-                    <Text style={StatusText}>
-                      {data.data.Type == 0
-                        ? 'Donation'
-                        : data.data.Type == 1
-                        ? 'Favour'
-                        : 'Sell'}
-                    </Text>
-                  </TouchableOpacity>
-                </LinearGradient>
-              </ImageBackground>
-            )}
-            renderStickyHeader={() => (
-              <View style={stickyHeaderContainer}>
-                <TouchableHighlight
-                  style={backIconView2}
+        <ParallaxScrollView
+          backgroundColor="white"
+          contentBackgroundColor="#ffffff"
+          stickyHeaderHeight={responsiveHeight(8)}
+          parallaxHeaderHeight={responsiveHeight(27)}
+          renderForeground={() => (
+            <ImageBackground
+              source={{uri: data.data.Post.Picture}}
+              resizeMode="stretch"
+              style={backgroundImage}>
+              <LinearGradient
+                colors={['rgba(29, 33, 31, 0.0001)', 'rgba(29, 33, 31, 0.5)']}
+                style={gradientStyle}
+                start={{x: 1, y: 1}}
+                end={{x: 0, y: 0}}>
+                <TouchableOpacity
+                  style={donateTextView1}
                   onPress={() => navigation.goBack()}>
                   <Ionicons
                     style={backIcon}
                     name="ios-arrow-back"
                     size={responsiveFontSize(5)}
-                    color={COLOR_PRIMARY}
+                    color="white"
                   />
-                </TouchableHighlight>
-
-                <View style={hearto}>
-                  <TouchableOpacity style={favoriteIconView2}>
+                </TouchableOpacity>
+                <View style={imagePencil}>
+                  <TouchableOpacity style={favoriteIconView1}>
                     <AntDesign
                       name="hearto"
                       size={responsiveFontSize(3)}
-                      color={COLOR_PRIMARY}
+                      color="#fff"
                       onPress={() => LikedPost(data.data.Post._id)}
                     />
                   </TouchableOpacity>
-                  <TouchableOpacity style={shareIconView2}>
+                  <TouchableOpacity style={shareIconView1}>
                     <Feather
                       style={shareIcon}
                       name="share-2"
                       size={responsiveFontSize(5)}
-                      color={COLOR_PRIMARY}
+                      color="#fff"
                     />
                   </TouchableOpacity>
-                  {console.log('data.data.User', data.data.Post.User)}
                 </View>
+                <TouchableOpacity style={containerDonation}>
+                  <Text style={StatusText}>
+                    {data.data.Type == 0
+                      ? 'Donation'
+                      : data.data.Type == 1
+                      ? 'Favour'
+                      : 'Sell'}
+                  </Text>
+                </TouchableOpacity>
+              </LinearGradient>
+            </ImageBackground>
+          )}
+          renderStickyHeader={() => (
+            <View style={stickyHeaderContainer}>
+              <TouchableHighlight
+                style={backIconView2}
+                onPress={() => navigation.goBack()}>
+                <Ionicons
+                  style={backIcon}
+                  name="ios-arrow-back"
+                  size={responsiveFontSize(5)}
+                  color={COLOR_PRIMARY}
+                />
+              </TouchableHighlight>
+
+              <View style={hearto}>
+                <TouchableOpacity style={favoriteIconView2}>
+                  <AntDesign
+                    name="hearto"
+                    size={responsiveFontSize(3)}
+                    color={COLOR_PRIMARY}
+                    onPress={() => LikedPost(data.data.Post._id)}
+                  />
+                </TouchableOpacity>
+                <TouchableOpacity style={shareIconView2}>
+                  <Feather
+                    style={shareIcon}
+                    name="share-2"
+                    size={responsiveFontSize(5)}
+                    color={COLOR_PRIMARY}
+                  />
+                </TouchableOpacity>
+                {console.log('data.data.User', data.data.Post.User)}
               </View>
-            )}>
-            <KeyboardAvoidingView behavior="padding" enabled>
-              <View style={ViewContainer}>
-                <Text style={TextStyleTop}>{data.data.Post.Description}</Text>
-              </View>
-              <TouchableOpacity
-                style={ViewUserImage}
-                onPress={() => navigation.navigate('UserProfile')}>
+            </View>
+          )}>
+          <KeyboardAvoidingView behavior="padding" enabled>
+            <View style={ViewContainer}>
+              <Text style={TextStyleTop}>{data.data.Post.Subject}</Text>
+            </View>
+            <TouchableOpacity
+              style={ViewUserImage}
+              onPress={() =>
+                navigation.navigate('UserProfile', {
+                  id: data.data.Post.User._id,
+                })
+              }>
+              {data.data.Post.User.Photo ? (
                 <Image
                   source={{
                     uri: data.data.Post.User.Photo,
                   }}
                   style={imageUser}
                 />
-                <View style={userNameContainer}>
-                  <Text style={userName}>{data.data.Post.User.Name}</Text>
-                  <Entypo
-                    name="star"
-                    size={responsiveFontSize(2)}
-                    color={COLOR_FAVOUR}
-                    style={starIcon}
-                  />
-                  <Text style={ratingText}>3.4</Text>
-                </View>
-              </TouchableOpacity>
-              <Text style={timeAgo}>Added an hour ago</Text>
-              <View style={ViewforSpace}>
-                <View style={ViewforSpace2} />
-              </View>
-              <Text style={aboutText}>About</Text>
-              <Text style={detailExe}>{data.data.Post.Description}</Text>
-              <Text style={locationText}>Location</Text>
-              <View style={DirectionRow}>
-                <Text style={locationNameText}>New Brooklin,UK</Text>
-                <View
-                  style={{
-                    alignSelf: 'flex-end',
-                    flexDirection: 'row',
-                    right: responsiveWidth(4),
-                  }}>
-                  <SimpleLineIcons
-                    name="location-pin"
-                    size={responsiveFontSize(1.5)}
-                    color={TEXTINPUT_COLOR}
-                    style={locationPin}
-                  />
-                  <Text style={distanceText}>
-                    {data.data.Post.Distance ? data.data.Post.Distance : '0'}km
-                  </Text>
-                </View>
-              </View>
-              <View style={ViewforSpace}>
-                <View style={ViewforSpace2} />
-              </View>
-              <View style={{flexDirection: 'row', flex: 1}}>
-                <Text style={interactionText}>Interactions</Text>
-                <View
-                  style={{
-                    width: responsiveWidth(55),
+              ) : (
+                <Image
+                  source={{
+                    uri: 'https://bootdey.com/img/Content/avatar/avatar7.png',
                   }}
+                  style={imageUser}
                 />
-                <TouchableOpacity
-                  style={{
-                    height: responsiveHeight(8),
-                    width: responsiveHeight(8),
-                    borderRadius: responsiveHeight(8),
-                    backgroundColor: COLOR_PRIMARY,
-                    alignItems: 'flex-end',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                  }}
-                  onPress={() => {
-                    CreateConversation(data.data.Post.User._id);
-                  }}>
-                  <Image source={require('../../Asset/Vector.png')} />
-                </TouchableOpacity>
-              </View>
+              )}
 
-              <View style={containerImage}>
-                <Image
-                  source={{
-                    uri: 'https://bootdey.com/img/Content/avatar/avatar7.png',
-                  }}
-                  style={imageStyle}
+              <View style={userNameContainer}>
+                <Text style={userName}>{data.data.Post.User.Name}</Text>
+                <Entypo
+                  name="star"
+                  size={responsiveFontSize(2)}
+                  color={COLOR_FAVOUR}
+                  style={starIcon}
                 />
-                <Text style={[userName, {marginLeft: responsiveHeight(1)}]}>
-                  Jonas Smith
-                </Text>
+                <Text style={ratingText}>3.4</Text>
               </View>
-              <Text style={Comment}>
-                Does it contain gluten?i can't consume gluiten.:(
+            </TouchableOpacity>
+            <Text style={timeAgo}>Added an hour ago</Text>
+            <View style={ViewforSpace}>
+              <View style={ViewforSpace2} />
+            </View>
+            <Text style={aboutText}>About</Text>
+            <Text style={detailExe}>{data.data.Post.Description}</Text>
+            <Text style={locationText}>Location</Text>
+            <View style={DirectionRow}>
+              <Text style={locationNameText} numberOfLines={1}>
+                {name}
               </Text>
-              <View style={containerImage}>
-                <Image
-                  source={{
-                    uri: 'https://bootdey.com/img/Content/avatar/avatar7.png',
-                  }}
-                  style={imageStyle}
+              <View
+                style={{
+                  alignSelf: 'flex-end',
+                  flexDirection: 'row',
+                  right: responsiveWidth(4),
+                }}>
+                <SimpleLineIcons
+                  name="location-pin"
+                  size={responsiveFontSize(1.5)}
+                  color={TEXTINPUT_COLOR}
+                  style={locationPin}
                 />
-                <Text style={[userName, {marginLeft: responsiveHeight(1)}]}>
-                  Jonas Smith
-                </Text>
+                <Text style={distanceText}>{location ? location : '0'}km</Text>
               </View>
-              <Text style={Comment}>No, it is gluiten free!</Text>
-            </KeyboardAvoidingView>
-          </ParallaxScrollView>
-        
+            </View>
+            <View style={ViewforSpace}>
+              <View style={ViewforSpace2} />
+            </View>
+            <View style={{flexDirection: 'row', flex: 1}}>
+              <Text style={interactionText}>Interactions</Text>
+              <View
+                style={{
+                  width: responsiveWidth(55),
+                }}
+              />
+              <TouchableOpacity
+                style={{
+                  height: responsiveHeight(8),
+                  width: responsiveHeight(8),
+                  borderRadius: responsiveHeight(8),
+                  backgroundColor: COLOR_PRIMARY,
+                  alignItems: 'flex-end',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+                onPress={() => {
+                  CreateConversation(data.data.Post.User._id);
+                }}>
+                <Image source={require('../../Asset/Vector.png')} />
+              </TouchableOpacity>
+            </View>
+            {data.data.Post.Comments.map(item => {
+              return (
+                <ScrollView>
+                  <View style={containerImage}>
+                    {console.log('item.User', item.User.Photo)}
+                    {item.User.Photo ? (
+                      <Image
+                        source={{
+                          uri: item.User.Photo,
+                        }}
+                        style={imageStyle}
+                      />
+                    ) : (
+                      <Image
+                        source={{
+                          uri:
+                            'https://bootdey.com/img/Content/avatar/avatar7.png',
+                        }}
+                        style={imageStyle}
+                      />
+                    )}
+                    <Text style={[userName, {marginLeft: responsiveHeight(1)}]}>
+                      {item.User.Name}
+                    </Text>
+                  </View>
+                  <Text style={Comment}>{item.Text}</Text>
+                </ScrollView>
+              );
+            })}
+          </KeyboardAvoidingView>
+        </ParallaxScrollView>
       )}
       <View style={TextinputView}>
         <TextInput
@@ -359,7 +410,11 @@ export const Detail = ({navigation}) => {
           onFocus={() => setFocusState(true)}
         />
         <TouchableOpacity
-          onPress={() => CommentPost(data.data.Post._id)}
+          onPress={() => {
+            CommentPost(data.data.Post._id);
+            setComment('');
+            postData();
+          }}
           style={sendmsgImage}>
           <Image
             style={sendmsgImage}

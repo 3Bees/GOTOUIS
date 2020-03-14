@@ -156,10 +156,10 @@ export const ViewPad = {
   
 };
 export const imageView = {
+  height:responsiveHeight(5),
   width: responsiveHeight(9),
-  marginVertical: responsiveHeight(2),
   alignItems: 'center',
-  backgroundColor:COLOR_PRIMARY
+  justifyContent:'center',
 };
 export const image = {
   width: responsiveWidth(12),

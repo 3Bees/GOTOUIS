@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useLayoutEffect} from 'react';
 import {
   View,
   Text,
@@ -10,7 +10,7 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Modal,
-  ActivityIndicator
+  ActivityIndicator,
 } from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import ApiManager from '../../ApiManager/ApiManager';
@@ -80,6 +80,7 @@ import {
 } from 'react-native-responsive-dimensions';
 import Feather from 'react-native-vector-icons/Feather';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import * as geolib from 'geolib';
 import {
   COLOR_PRIMARY,
   COLOR_DONATE,
@@ -89,6 +90,7 @@ import {
   SECONDARY_COLOR,
 } from '../../Resources/Color/Color';
 import {ViewButtonContainer, textInputField, SendButton} from '../Chat/Style';
+import AsyncStorage from '@react-native-community/async-storage';
 
 export const EditDetails = ({navigation}) => {
   const [comment, setComment] = useState('');
@@ -97,21 +99,51 @@ export const EditDetails = ({navigation}) => {
 
   const [id, setId] = useState(navigation.state.params.id);
   const [data, setData] = useState({});
+  const [load, setload] = useState(false);
+  const [location, setLocation] = useState('');
+
   useEffect(() => {
-    if (data.data == undefined) {
-      new ApiManager()
-        .getPostbyId(id)
-        .then(res => {
-          console.log('res', res);
-          setData(res);
-        })
-        .catch(err => console.log(err));
+    const isFocused = navigation.isFocused();
+
+    if (load == false) {
+      postData();
     }
-  });
+    const navFocusListener = navigation.addListener('didFocus', () => {
+      // do some API calls here
+      postData();
+    });
+
+    return () => {
+      navFocusListener.remove();
+    };
+  }, []);
+  const postData = async () => {
+    let lat = await AsyncStorage.getItem('lat');
+    let long = await AsyncStorage.getItem('lon');
+    new ApiManager()
+      .getPostbyId(id)
+      .then(res => {
+        let distance = geolib.getPreciseDistance(
+          {latitude: lat, longitude: long},
+          {
+            latitude: res.data.Post.Location.Lat,
+            longitude: res.data.Post.Location.Lon,
+          },
+        );
+        setLocation(geolib.convertDistance(distance, 'km').toFixed(2))
+
+        setData(res);
+        setload(true);
+      })
+      .catch(err => {
+        alert(err);
+        setload(true);
+      }),
+      [id];
+  };
   const toggleModal = () => {
     setmodalVisible(!modalVisible);
   };
-  console.log(focusState);
   return (
     <View
       style={[
@@ -218,14 +250,14 @@ export const EditDetails = ({navigation}) => {
           )}>
           <KeyboardAvoidingView behavior="padding" enabled>
             <View style={ViewContainer}>
-              <Text style={TextStyleTop}>{data.data.Post.Description}</Text>
+              <Text style={TextStyleTop}>{data.data.Post.Subject}</Text>
             </View>
             <TouchableOpacity
               onPress={() => navigation.navigate('UserProfile')}
               style={ViewUserImage}>
               <Image
                 source={{
-                  uri:data.data.Post.User.Photo
+                  uri: data.data.Post.User.Photo,
                 }}
                 style={imageUser}
               />
@@ -245,10 +277,7 @@ export const EditDetails = ({navigation}) => {
               <View style={ViewforSpace2} />
             </View>
             <Text style={aboutText}>About</Text>
-            <Text style={detailExe}>
-              i'm giving away a delicious apple cake because i was given two and
-              i will not eat both
-            </Text>
+            <Text style={detailExe}>{data.data.Post.Description}</Text>
             <Text style={locationText}>Location</Text>
             <View style={DirectionRow}>
               <Text style={locationNameText}>New Brooklin,UK</Text>
@@ -264,7 +293,9 @@ export const EditDetails = ({navigation}) => {
                   color={TEXTINPUT_COLOR}
                   style={locationPin}
                 />
-                <Text style={distanceText}>{data.data.Post.Distance ? data.data.Post.Distance : '0'}km</Text>
+                <Text style={distanceText}>
+                  {location ?location : '0'}km
+                </Text>
               </View>
             </View>
             <View style={ViewforSpace}>
@@ -272,33 +303,26 @@ export const EditDetails = ({navigation}) => {
             </View>
 
             <Text style={interactionText}>Interactions</Text>
-
-            <View style={containerImage}>
-              <Image
-                source={{
-                  uri: 'https://bootdey.com/img/Content/avatar/avatar7.png',
-                }}
-                style={imageStyle}
-              />
-              <Text style={[userName, {marginLeft: responsiveHeight(1)}]}>
-                Jonas Smith
-              </Text>
-            </View>
-            <Text style={Comment}>
-              Does it contain gluten?i can't consume gluiten.:(
-            </Text>
-            <View style={containerImage}>
-              <Image
-                source={{
-                  uri: 'https://bootdey.com/img/Content/avatar/avatar7.png',
-                }}
-                style={imageStyle}
-              />
-              <Text style={[userName, {marginLeft: responsiveHeight(1)}]}>
-                Jonas Smith
-              </Text>
-            </View>
-            <Text style={Comment}>No, it is gluiten free!</Text>
+            {data.data.Post.Comments.map(item => {
+              {/* console.log("item",item) */}
+              return (
+                <View>
+                  <View style={containerImage}>
+                    <Image
+                      source={{
+                        uri:
+                          'https://bootdey.com/img/Content/avatar/avatar7.png',
+                      }}
+                      style={imageStyle}
+                    />
+                    <Text style={[userName, {marginLeft: responsiveHeight(1)}]}>
+                      {item.User.Name}
+                    </Text>
+                  </View>
+                  <Text style={Comment}>{item.Text}</Text>
+                </View>
+              );
+            })}
           </KeyboardAvoidingView>
         </ParallaxScrollView>
       )}
@@ -315,7 +339,8 @@ export const EditDetails = ({navigation}) => {
               style={[ApplyButtonText, {marginVertical: responsiveHeight(2)}]}>
               <TouchableOpacity
                 onPress={() => {
-                  toggleModal(), navigation.navigate('UpdatePost',{id:id});
+                  toggleModal(), navigation.navigate('UpdatePost', {id: id});
+                  setload(false);
                 }}
                 style={{
                   borderColor: SECONDARY_COLOR,
@@ -343,7 +368,7 @@ export const EditDetails = ({navigation}) => {
               ]}>
               <TouchableOpacity
                 onPress={() => {
-                  toggleModal(), navigation.navigate('ClosePost',{id:id});
+                  toggleModal(), navigation.navigate('ClosePost', {id: id});
                 }}
                 style={{
                   borderColor: SECONDARY_COLOR,

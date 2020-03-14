@@ -82,12 +82,12 @@ export default class Chat extends Component {
         },
       ],
       id: this.props.navigation.state.params.id,
+      sender: this.props.navigation.state.params.sender,
+      receiver: this.props.navigation.state.params.receiver,
     };
     this.send = this.send.bind(this);
     this.reply = this.reply.bind(this);
     this.renderItem = this._renderItem.bind(this);
-    // (this.sender = this.props.navigation.state.params.sender),
-    //   (this.receiver = this.props.navigation.state.params.receiver);
   }
 
   reply() {
@@ -103,43 +103,43 @@ export default class Chat extends Component {
 
   componentDidMount() {
     this.fetchData();
-    // this.initSocket();
+    this.initSocket();
   }
-  // componentWillUnmount() {
-  //   if (this.socket) {
-  //     this.socket.disconnect();
-  //   }
-  // }
+  componentWillUnmount() {
+    if (this.socket) {
+      this.socket.disconnect();
+    }
+  }
 
-  // initSocket = () => {
-  //   var sending_data = {
-  //     sender_id: this.sender,
-  //     receiver_id: this.receiver._id,
-  //     message: this.state.message,
-  //   };
-  //   this.socket = SocketIOClient('https://api.gotoapp.io/graphql', {
-  //     transports: ['websocket'],
-  //     secure: true,
-  //   });
-  //   this.socket.on('connect', data => {
-  //     this.socket.emit('sms-send', sending_data);
-  //   });
-  //   this.socket.on('sms-send', data => {
-  //     if (
-  //       (this.state.data.sender == this.sender &&
-  //         this.state.data.receiver == this.receiver) ||
-  //       (this.state.data.sender == this.receiver &&
-  //         this.state.data.receiver == this.sender)
-  //     ) {
-  //       let arr = [];
-  //       arr.push(data.message);
-  //       arr = this.state.data.concat(arr);
-  //       this.setState({
-  //         data: arr,
-  //       });
-  //     }
-  //   });
-  // };
+  initSocket = () => {
+    var sending_data = {
+      sender_id: this.state.sender,
+      receiver_id: this.state.receiver,
+      message: this.state.message,
+    };
+    this.socket = SocketIOClient('https://api.gotoapp.io/graphql', {
+      transports: ['websocket'],
+      secure: true,
+    });
+    this.socket.on('connect', data => {
+      this.socket.emit('sms-send', sending_data);
+    });
+    this.socket.on('sms-send', data => {
+      if (
+        (this.state.data.sender == this.state.sender &&
+          this.state.data.receiver == this.state.receiver) ||
+        (this.state.data.sender == this.state.receiver &&
+          this.state.data.receiver == this.state.sender)
+      ) {
+        let arr = [];
+        arr.push(data.message);
+        arr = this.state.data.concat(arr);
+        this.setState({
+          data: arr,
+        });
+      }
+    });
+  };
 
   send() {
     if (this.state.msg.length > 0) {
@@ -157,9 +157,14 @@ export default class Chat extends Component {
     }
   }
   fetchData() {
+    console.log('this.state.id', this.state.id);
     new ApiManager()
       .Conversation(this.state.id)
-      .then(res => console.log(res.data.Conversation))
+      .then(res => {
+        console.log('data>>>>>>>>>>>>>', res.data.Conversation);
+        console.log('data<<<<<<<<<<<<<<<', res.data.Conversation.Messages);
+        this.setState({data: res.data.Conversation});
+      })
       .catch(err => console.log(err));
   }
 
@@ -192,6 +197,7 @@ export default class Chat extends Component {
   };
 
   render() {
+    console.log('this.state.id', this.state.sender);
     return (
       <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
         <View style={{flex: 1, backgroundColor: 'white'}}>
@@ -208,7 +214,13 @@ export default class Chat extends Component {
             </TouchableOpacity>
             <TouchableOpacity
               style={ViewHeader}
-              onPress={() => this.props.navigation.navigate('UserProfile')}>
+              onPress={() =>{
+               this.state.sender? this.props.navigation.navigate('UserProfile', {
+                  id: this.state.sender,
+                }):
+                null
+                }
+              }>
               <Image
                 style={imageStyle}
                 source={require('../../Asset/cake.png')}

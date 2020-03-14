@@ -62,6 +62,7 @@ export const UpdatePost = ({navigation}) => {
   const [description, setDescription] = useState('');
   const [Picture, setPicture] = useState('');
   const [location, setLocation] = useState('');
+  const [image,setimage]=useState('')
 
   const handleChoosePhoto = () => {
     var options = {
@@ -76,7 +77,8 @@ export const UpdatePost = ({navigation}) => {
       } else if (response.error) {
       } else if (response.customButton) {
       } else {
-        console.log('image');
+        setimage(response['uri'])
+        console.log('image',response['uri']);
         ImageResizer.createResizedImage(
           response['uri'],
           Dimensions.get('window').width,
@@ -95,12 +97,13 @@ export const UpdatePost = ({navigation}) => {
   const UpdatePost = async () => {
     let lat = await AsyncStorage.getItem('lat');
     let long = await AsyncStorage.getItem('lon');
+    console.log("title,description",data.data.Post.Type,data.data.Post.Price)
     new ApiManager()
-      .editPost(data.data.Post._id, title, description, '0', lat, long, '12')
+      .editPost(data.data.Post._id, title?title:data.data.Post.Subject, description?description:data.data.Post.Description, `${data.data.Post.Type}`, lat, long, `${data.data.Post.Price}`,Picture?Picture:data.data.Post.Picture)
       .then(res => {
         console.log(res);
         if (res) {
-          navigation.goBack();
+          navigation.navigate('EditDetails',{id:data.data.Post._id});
         }
       })
       .cateh(err => console.log(err));
@@ -112,7 +115,7 @@ export const UpdatePost = ({navigation}) => {
         .then(async res => {
           let data = await AsyncStorage.getItem('name');
           setLocation(data);
-          console.log('res', res);
+          console.log('res>>>>>>>>>>>>>>', res);
           setData(res);
         })
         .catch(err => console.log(err));
@@ -212,7 +215,7 @@ export const UpdatePost = ({navigation}) => {
               placeholder={data.data ? data.data.Post.Description : null}
               numberOfLines={4}
               value={description}
-              onChangeText={description => setDescription(description)}
+              onChangeText={description => setDescription(description!==''?description:data.data.Post.Description)}
               placeholderTextColor={'#000'}
             />
             <View
@@ -251,11 +254,12 @@ export const UpdatePost = ({navigation}) => {
             </View>
 
             <TouchableOpacity style={ViewStyleImage}>
+           
               <ImageBackground
                 style={[ViewStyleImage, {zIndex: 1}]}
                 source={{
-                  uri: Picture
-                    ? Picture
+                  uri: image
+                    ? image
                     : data.data
                     ? data.data.Post.Picture
                     : null,
@@ -274,7 +278,7 @@ export const UpdatePost = ({navigation}) => {
                     name="cross"
                     size={responsiveFontSize(2.5)}
                     color={'white'}
-                    // onPress={() => handleChoosePhoto()}
+                    onPress={() => handleChoosePhoto()}
                   />
                 </View>
               </ImageBackground>

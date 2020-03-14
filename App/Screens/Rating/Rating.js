@@ -31,25 +31,37 @@ import {
 } from '../../Resources/Color/Color';
 import {ForgetPasswordView, ForgetPasswordText} from './Style';
 import {Rating, AirbnbRating} from 'react-native-ratings';
+import ApiManager from '../../ApiManager/ApiManager';
 
 export const Ratings = ({navigation}) => {
   const [rating, setrating] = useState(0);
   const [btnCOlor, setbtnColor] = useState(false);
+  const [id, setId] = useState(navigation.state.params.id);
+  const [_id, setID] = useState(navigation.state.params._id);
 
-  ratingCompleted = rating => {};
-  //   console.log(btnCOlor);
+ const EvaluteUser = () => {
+    new ApiManager()
+      .EvaluteUser(id, _id, rating)
+      .then(res => console.log("res",res))
+      .catch(err => console.log(err));
+  };
+
+ const  ratingCompleted=(rate) =>{
+ setrating(rate) 
+ }
+    console.log(id,_id);
   return (
     <View style={Container}>
       <SafeAreaView style={Container}>
-      <View style={Container2}>
-        <StatusBar
-          translucent
-          backgroundColor="transparent"
-          barStyle="dark-content"
-        />
-        
+        <View style={Container2}>
+          <StatusBar
+            translucent
+            backgroundColor="transparent"
+            barStyle="dark-content"
+          />
+
           <TouchableOpacity
-            style={TopTextStyle} 
+            style={TopTextStyle}
             onPress={() => navigation.goBack()}>
             <Ionicons
               style={TopText}
@@ -61,10 +73,9 @@ export const Ratings = ({navigation}) => {
           <Text
             style={{
               left: responsiveHeight(2.5),
-              marginTop:responsiveHeight(1.5),
+              marginTop: responsiveHeight(1.5),
               fontFamily: Platform.OS === 'android' ? 'Muli-Bold' : 'Muli',
               fontSize: responsiveFontSize(2.7),
-              
             }}>
             Give Star
           </Text>
@@ -75,7 +86,9 @@ export const Ratings = ({navigation}) => {
                   marginHorizontal: responsiveHeight(3),
                   marginTop: responsiveHeight(1),
                   flexDirection: 'row',
-                }}>
+                }}>{
+
+                }
                 <Image
                   source={{
                     uri: 'https://bootdey.com/img/Content/avatar/avatar7.png',
@@ -96,7 +109,8 @@ export const Ratings = ({navigation}) => {
                   }}>
                   <Text
                     style={{
-                      fontFamily: Platform.OS === 'android' ? 'Muli-Regular' : 'Muli',
+                      fontFamily:
+                        Platform.OS === 'android' ? 'Muli-Regular' : 'Muli',
                       fontStyle: 'normal',
                       fontWeight: 'normal',
                       color: TEXT_COLOR,
@@ -112,9 +126,10 @@ export const Ratings = ({navigation}) => {
               type="star"
               imageSize={35}
               // startingValue={rating/2}
-              onFinishRating={ratingCompleted()}
-              style={{ paddingHorizontal:10,marginTop:15 }}
+              onFinishRating={(rate)=>ratingCompleted(rate)}
+              style={{paddingHorizontal: 10, marginTop: 15}}
               // fractions={2}
+              onStartRating={(rate)=>ratingCompleted(rate)}
               showRating={false}
             />
           </View>
@@ -125,10 +140,13 @@ export const Ratings = ({navigation}) => {
               marginHorizontal: responsiveWidth(3),
             }}>
             {btnCOlor ? (
-              <TouchableOpacity style={{marginHorizontal:responsiveWidth(2)}} onPress={()=>navigation.navigate('EditDetails')}>
+              <TouchableOpacity
+                style={{marginHorizontal: responsiveWidth(2)}}
+                onPress={() => navigation.navigate('EditDetails')}>
                 <Text
                   style={{
-                    fontFamily: Platform.OS === 'android' ? 'Muli-Regular' : null,
+                    fontFamily:
+                      Platform.OS === 'android' ? 'Muli-Regular' : null,
                     fontStyle: 'normal',
                     fontWeight: 'normal',
                     color: TEXTINPUT_COLOR,
@@ -138,7 +156,8 @@ export const Ratings = ({navigation}) => {
                 </Text>
                 <Text
                   style={{
-                    fontFamily: Platform.OS === 'android' ? 'Muli-Regular' : null,
+                    fontFamily:
+                      Platform.OS === 'android' ? 'Muli-Regular' : null,
                     fontStyle: 'normal',
                     fontWeight: 'normal',
                     color: TEXTINPUT_COLOR,
@@ -151,15 +170,14 @@ export const Ratings = ({navigation}) => {
               <Button
                 checked
                 pressme={() => {
+                  EvaluteUser()
                   setbtnColor(true);
-                  
                 }}>
                 Rate
               </Button>
             )}
           </View>
-        
-      </View>
+        </View>
       </SafeAreaView>
     </View>
   );

@@ -48,6 +48,7 @@ export const Location = ({navigation}) => {
   const [lat,setLat]=useState('')
   const [long,setLong]=useState('')
   const [location,setLocation]=useState('')
+  const[locName,setLocname]=useState(false)
 
   useEffect(() => {
     setId(navigation.state.params.id);
@@ -56,25 +57,30 @@ export const Location = ({navigation}) => {
 
   const Place =async() => {
     let loc=await AsyncStorage.getItem('name')
+    
+
+    let lat=await AsyncStorage.getItem('lat')
+    let lng=await AsyncStorage.getItem('lon')
     setLocation(loc)
     // setSearch(text);
+   if(locName==false){ 
+     console.log("i m here")
     var requestOptions = {
       method: 'POST',
       redirect: 'follow',
     };
 
-    let lat=await AsyncStorage.getItem('lat')
-    let lng=await AsyncStorage.getItem('lon')
     fetch(
-      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18`,
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=33.7266008&lon=73.0505563&zoom=18&addressdetails=1`,
       requestOptions,
     )
-      .then(response => response.json())
+      .then(response => response.text())
       .then(msgs => {
         console.log('datatatat', msgs);
         // setData([JSON.parse(msgs)]);
       })
       .catch(error => console.log('error', error));
+   }
   };
 
   const saveData = async item => {

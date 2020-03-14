@@ -9,7 +9,7 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Dimensions,
-  ScrollView
+  ScrollView,
 } from 'react-native';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import ImageResizer from 'react-native-image-resizer';
@@ -58,8 +58,6 @@ import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
 import SearchInput, {createFilter} from 'react-native-search-filter';
 import AsyncStorage from '@react-native-community/async-storage';
 
-
-
 const KEYS_TO_FILTERS = ['display_name'];
 
 export const LookingFor = ({navigation}) => {
@@ -80,6 +78,9 @@ export const LookingFor = ({navigation}) => {
   const saveData = async item => {
     setLat(item.lat);
     setLng(item.lon);
+    await AsyncStorage.setItem('lat', item.lat);
+    await AsyncStorage.setItem('lon', item.lon);
+    await AsyncStorage.setItem('name', item.display_name);
   };
   const searchUpdated = text => {
     setSearch(text);
@@ -99,24 +100,25 @@ export const LookingFor = ({navigation}) => {
       .catch(error => alert('error', error));
   };
 
-  useEffect(()=>{
-    if(!location){
-      locat()
+  useEffect(() => {
+    if (!location) {
+      locat();
     }
-  })
+  });
 
-  const locat=async()=>{
-    let data=await AsyncStorage.getItem('name')
-    setLoction(data)
-  }
+  const locat = async () => {
+    let data = await AsyncStorage.getItem('name');
+    setLoction(data);
+  };
 
-
-  check = () => {
+ const check = async () => {
+    let lat = await AsyncStorage.getItem('lat');
+    let lng = await AsyncStorage.getItem('lon');
     new ApiManager()
-      .createPostPrice(title, Description, 12, lat,lng, Picture, 'Looking For')
+      .createPostPrice(title, Description, 12, lat, lng, Picture, '3')
       .then(res => {
         if (res) {
-          navigation.goBack();
+          navigation.navigate("Home");
         }
         console.log(res);
       })
@@ -153,7 +155,7 @@ export const LookingFor = ({navigation}) => {
     });
   };
   const Arr_Location = data.filter(createFilter(search, KEYS_TO_FILTERS));
-  
+
   return (
     <ScrollView style={Container}>
       <KeyboardAvoidingView behavior="padding" enabled>
@@ -238,7 +240,7 @@ export const LookingFor = ({navigation}) => {
                   size={responsiveFontSize(4)}
                   color={COLOR_PRIMARY}
                 />
-                  {!visible ? (
+                {!visible ? (
                   <View>
                     {search ? (
                       <TouchableOpacity onPress={() => setVisible(true)}>
@@ -250,7 +252,7 @@ export const LookingFor = ({navigation}) => {
                       </TouchableOpacity>
                     ) : (
                       <TouchableOpacity onPress={() => setVisible(true)}>
-                        <Text>{location?location:'Search Location'}</Text>
+                        <Text>{location ? location : 'Search Location'}</Text>
                       </TouchableOpacity>
                     )}
                   </View>
@@ -259,12 +261,11 @@ export const LookingFor = ({navigation}) => {
                     onChangeText={term => {
                       searchUpdated(term);
                     }}
-                    placeholder={location?location:"Search Location"}
+                    placeholder={location ? location : 'Search Location'}
                     onFocus={() => setVisible(true)}
                   />
                 )}
-            </View>
-            
+              </View>
             </View>
             {search.length > 0 && visible ? (
               <ScrollView
@@ -274,7 +275,7 @@ export const LookingFor = ({navigation}) => {
                   top: responsiveHeight(57),
                   position: 'absolute',
                   backgroundColor: 'red',
-                  marginHorizontal:responsiveWidth(6)
+                  marginHorizontal: responsiveWidth(6),
                 }}>
                 {data.length > 0
                   ? Arr_Location.map(item => {
@@ -309,21 +310,21 @@ export const LookingFor = ({navigation}) => {
                   : null}
               </ScrollView>
             ) : null}
-            </View>
-            <TouchableOpacity
-              onPress={() => handleChoosePhoto()}
-              style={ViewStyleImage}>
-              <FontAwesome5
-                name="image"
-                size={responsiveFontSize(3)}
-                color={COLOR_PRIMARY}
-              />
-            </TouchableOpacity>
-            <View style={buttonView}>
-              <Button checked pressme={() => check()}>
-                Post
-              </Button>
-            </View>
+          </View>
+          <TouchableOpacity
+            onPress={() => handleChoosePhoto()}
+            style={ViewStyleImage}>
+            <FontAwesome5
+              name="image"
+              size={responsiveFontSize(3)}
+              color={COLOR_PRIMARY}
+            />
+          </TouchableOpacity>
+          <View style={buttonView}>
+            <Button checked pressme={() => check()}>
+              Post
+            </Button>
+          </View>
         </SafeAreaView>
       </KeyboardAvoidingView>
     </ScrollView>

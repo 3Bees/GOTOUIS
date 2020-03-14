@@ -41,8 +41,15 @@ export const Chat = ({navigation}) => {
   useEffect(() => {
     if (data.data == undefined) {
       chatData();
-    }
-  });
+    }const navFocusListener = navigation.addListener('didFocus', () => {
+      // do some API calls here
+      chatData();
+    });
+
+    return () => {
+      navFocusListener.remove();
+    };
+  }, []);
   const chatData = () => {
     new ApiManager()
       .ConversationList()
@@ -70,35 +77,44 @@ export const Chat = ({navigation}) => {
             data={data.data.Conversations}
             keyExtractor={item => item.id}
             renderItem={(item, index) => {
-              console.log('item>>>>>>>', item.item);
+              console.log('item>>>>>>>', item.LastMessage);
               return (
                 <TouchableOpacity
                   key={index}
-                  onPress={() =>
-                    navigation.navigate('Inbox', {id: item.item._id})
+                  onPress={() =>{
+                    {item.item.Participants.map(res => {
+                         User.user._id !== res._id ? (
+                          navigation.navigate('Inbox', {id: item.item._id,sender:res._id})
+                        ) : null; 
+                      })}
+                  }
+                    
                   }
                   style={[Container2, {backgroundColor: COLOR_BACKGROUND}]}>
                   <View style={ViewPad}>
                     <View style={imageView}>
                       {item.item.Participants.map(res => {
-                        return User.user.Email !== res.Email ? (
-                          <Image source={{uri: res.photo}} style={image} />
-                        ) : null;
+                        return User.user._id !== res._id ? (
+                          <Image source={{uri: res.Photo}} style={image} />
+                        ) : <AntDesign size={responsiveFontSize(5)} name="user"/>;
                       })}
                     </View>
                     <View style={TextContainer}>
                       {item.item.Participants.map(res => {
-                        {console.log(User, res._id )}
-                        return User.user.Email !== res.Email ? (
+                        {console.log(User.user._id, res )}
+                        return User.user._id !== res._id ? (
                           <Text style={Username}>{res.Name}</Text>
                         ) : null; 
                       })}
-                      <Text style={TextComment}>{item.item.text}</Text>
+                      <Text style={TextComment}>{item.item.LastMessage.Text}</Text>
                     </View>
                     <View style={TextContainer3}>
                       <Text style={Time}>10:32</Text>
                       <View style={Status}>
-                        {item.item.status ? (
+                      {
+                        console.log(item.item.UnreadMessages!==0||item.item.UnreadMessages!==null)
+                      }
+                        {item.item.UnreadMessages !==0 ? (
                           <View style={[Circle, {left: 8}]}></View>
                         ) : (
                           <AntDesign

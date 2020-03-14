@@ -66,6 +66,7 @@ import {
   ImageLogo,
   locationpinStyle2,
 } from './Style';
+import * as geolib from 'geolib';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
@@ -97,6 +98,7 @@ export const Home = ({navigation}) => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [slide, setSlide] = useState(1);
+  const [lon, setLong] = useState('');
   const dispatch = useDispatch();
   const toggleModal = () => {
     setmodalVisible(!modalVisible);
@@ -105,26 +107,47 @@ export const Home = ({navigation}) => {
   useEffect(() => {
     if (data.data == undefined) {
       Data();
-    }
-  });
+    }  const navFocusListener = navigation.addListener('didFocus', () => {
+      // do some API calls here
+      Data();
+    });
+
+    return () => {
+      navFocusListener.remove();
+    };
+  }, []);
+  const User = useSelector(state => ({...state.User}));
   const Data = async () => {
     let lat = await AsyncStorage.getItem('lat');
     let lng = await AsyncStorage.getItem('lon');
     setLati(lat);
+    setLong(lng);
     new ApiManager()
       .getAllPost(slide, lat, lng)
       .then(res => {
-        console.log(res.data.Posts);
         setLoading(false);
         setData(res);
         new ApiManager()
           .userData()
-          .then(res => {dispatch({type: 'USER', payload: res.data.Profile});})
-          .catch(res => console.log(res));
+          .then(res => {
+            dispatch({type: 'USER', payload: res.data.Profile});
+          })
+          .catch(res =>alert(res));
       })
       .catch(err => {
         setLoading(false);
       });
+  };
+
+  const calculateLoc = item => {
+    let distance = geolib.getPreciseDistance(
+      {latitude: lati, longitude: lon},
+      {
+        latitude: item.Lat,
+        longitude: item.Lon,
+      },
+    );
+    return geolib.convertDistance(distance, 'km').toFixed(1);
   };
 
   return (
@@ -239,7 +262,9 @@ export const Home = ({navigation}) => {
             ) : (
               <View style={locationbar}>
                 <TouchableOpacity
-                  onPress={() => navigation.navigate('Location', {id: 1})}
+                  onPress={() => {
+                    navigation.navigate('Location', {id: 1});
+                  }}
                   style={ToplocationContainer}>
                   <SimpleLineIcons
                     name="location-pin"
@@ -260,21 +285,27 @@ export const Home = ({navigation}) => {
               </View>
             )}
           </View>
-          {lati && data.data !== undefined ? (
+          {data.data == undefined ? (
+            <ActivityIndicator
+              size={'large'}
+              style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}
+            />
+          ) : lati && data.data !== undefined ? (
             <FlatList
               style={FlatListStyle}
               data={data.data['Posts']}
               keyExtractor={item => item.id}
               renderItem={(item, index) => {
-                console.log('item', item);
                 return (
                   <View>
                     {item.item.Type == 3 ? (
                       <TouchableOpacity
-                        onPress={() => navigation.navigate('Gymmate')}
+                        onPress={() =>
+                          navigation.navigate('Gymmate', {id: item.item._id})
+                        }
                         style={LookingContainer}>
                         <View style={LookingTopTextContainer}>
-                          <Text style={LookingName}>Gymmate</Text>
+                          <Text style={LookingName}>{item.item.Subject}</Text>
                           <Text
                             style={{
                               color: '#76807C',
@@ -284,7 +315,7 @@ export const Home = ({navigation}) => {
                                   ? 'Muli-Regular'
                                   : null,
                             }}>
-                            Looking for a mate to workout togather
+                            {item.item.Description}
                           </Text>
                         </View>
                         <View style={LookingForTextContainer}>
@@ -292,9 +323,14 @@ export const Home = ({navigation}) => {
                         </View>
                         <View style={LookLocationpinCotainer}>
                           <View style={UserDetailContainer}>
-                            <Image style={userImage} />
+                            <Image
+                              style={userImage}
+                              source={{uri: item.item.User.Photo}}
+                            />
                             <View>
-                              <Text style={UserName}>Jequeline Robinson</Text>
+                              <Text style={UserName}>
+                                {item.item.User.Name}
+                              </Text>
                               <View style={RatingContainer}>
                                 <Entypo
                                   name="star"
@@ -336,7 +372,10 @@ export const Home = ({navigation}) => {
                                   color: TEXTINPUT_COLOR,
                                 },
                               ]}>
-                              1.3 KM
+                              {item.item.Location
+                                ? calculateLoc(item.item.Location)
+                                : null}{' '}
+                              KM
                             </Text>
                           </View>
                         </View>
@@ -344,9 +383,15 @@ export const Home = ({navigation}) => {
                     ) : (
                       <TouchableOpacity
                         style={ListContainer}
-                        onPress={() =>
-                          navigation.navigate('Detail', {id: item.item._id})
-                        }>
+                        onPress={() => {
+                          if (User.user._id == item.item.User._id) {
+                            navigation.navigate('EditDetails', {
+                              id: item.item._id,
+                            });
+                          } else {
+                            navigation.navigate('Detail', {id: item.item._id});
+                          }
+                        }}>
                         <View style={listView2}>
                           <Text style={TextDes}>{item.item.Description}</Text>
                           <View style={imageView2}>
@@ -354,10 +399,6 @@ export const Home = ({navigation}) => {
                               style={imageStyle}
                               source={{uri: item.item.User.Photo}}
                             />
-                            {console.log(
-                              'as i m background image',
-                              item.item.Picture,
-                            )}
                             <Text style={TextName}>{item.item.User.Name}</Text>
                           </View>
                         </View>
@@ -407,7 +448,7 @@ export const Home = ({navigation}) => {
                                         color: 'white',
                                       },
                                     ]}>
-                                    {item.item.Distance} KM
+                                    {calculateLoc(item.item.Location)} KM
                                   </Text>
                                 </View>
                               </View>
@@ -430,7 +471,7 @@ export const Home = ({navigation}) => {
                                         color: 'white',
                                       },
                                     ]}>
-                                    {item.item.Distance} KM
+                                    {calculateLoc(item.item.Location)} KM
                                   </Text>
                                 </View>
                               </View>
@@ -448,7 +489,7 @@ export const Home = ({navigation}) => {
                                     size={responsiveFontSize(2)}
                                     style={{bottom: 2}}
                                   />
-                                  <Text style={GestureNumberText}>3</Text>
+                                  <Text style={GestureNumberText}>{item.item.Likes?item.item.Likes.length:0}</Text>
                                   <SimpleLineIcons
                                     name="location-pin"
                                     size={responsiveFontSize(1.5)}
@@ -462,7 +503,7 @@ export const Home = ({navigation}) => {
                                         color: 'white',
                                       },
                                     ]}>
-                                    {item.item.Distance} KM
+                                    {calculateLoc(item.item.Location)} KM
                                   </Text>
                                 </View>
                               </View>

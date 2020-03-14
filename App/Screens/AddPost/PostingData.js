@@ -59,6 +59,7 @@ import {gql} from 'apollo-boost';
 import {useSelector, useDispatch} from 'react-redux';
 import SearchInput, {createFilter} from 'react-native-search-filter';
 import ApiManager from '../../ApiManager/ApiManager';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const KEYS_TO_FILTERS = ['display_name'];
 const fs = RNFetchBlob.fs;
@@ -119,6 +120,9 @@ export const PostAdd = ({navigation}) => {
   const saveData = async item => {
     setLat(item.lat);
     setLng(item.lon);
+    await AsyncStorage.setItem('lat', item.lat);
+    await AsyncStorage.setItem('lon', item.lon);
+    await AsyncStorage.setItem('name', item.display_name);
   };
   const searchUpdated = text => {
     setSearch(text);
@@ -138,14 +142,16 @@ export const PostAdd = ({navigation}) => {
       .catch(error => alert('error', error));
   };
 
-  const check = () => {
+  const check = async() => {   
+    let lat = await AsyncStorage.getItem('lat');
+    let lng = await AsyncStorage.getItem('lon');
     console.log();
     new ApiManager()
-      .createPost(title, Description, 12, lat, lng, Picture, 'Donate')
+      .createPost(title, Description, 12, lat, lng, Picture, '0')
       .then(res => {
         console.log(res);
         if (res) {
-          navigation.goBack();
+          navigation.navigate("Home");
         }
       })
       .catch(err => alert(err));

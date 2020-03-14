@@ -56,6 +56,7 @@ import {ForgetPasswordView, ForgetPasswordText} from './Style';
 import {Rating, AirbnbRating} from 'react-native-ratings';
 import ImagePicker from 'react-native-image-picker';
 import ApiManager from '../../ApiManager/ApiManager';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const KEYS_TO_FILTERS = ['display_name'];
 
@@ -90,6 +91,9 @@ export const Favour = ({navigation}) => {
   const saveData = async item => {
     setLat(item.lat);
     setLng(item.lon);
+    await AsyncStorage.setItem('lat', item.lat);
+    await AsyncStorage.setItem('lon', item.lon);
+    await AsyncStorage.setItem('name', item.display_name);
   };
   const searchUpdated = text => {
     setSearch(text);
@@ -109,13 +113,16 @@ export const Favour = ({navigation}) => {
       .catch(error => alert('error', error));
   };
 
-  check = () => {
+const  check = async() => {
     console.log('i m here');
+    
+    let lat = await AsyncStorage.getItem('lat');
+    let lng = await AsyncStorage.getItem('lon');
     new ApiManager()
-      .createPost(title, Description, 12, lat,lng, Picture, 'Favour')
+      .createPost(title, Description, 12, lat,lng, Picture, '1')
       .then(res => {
         if (res) {
-          navigation.goBack();
+          navigation.navigate("Home");
         }
         console.log(res);
       })

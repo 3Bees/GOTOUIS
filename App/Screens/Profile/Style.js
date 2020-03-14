@@ -3,7 +3,7 @@ import {
   responsiveFontSize,
   responsiveWidth
 } from 'react-native-responsive-dimensions';
-import {COLOR_PRIMARY,COLOR_BACKGROUND,SECONDARY_COLOR,TEXTINPUT_COLOR,INITIAL_BUTTON} from '../../Resources/Color/Color';
+import {COLOR_PRIMARY,COLOR_BACKGROUND,SECONDARY_COLOR,TEXTINPUT_COLOR,INITIAL_BUTTON, COLOR_LOOKING_FOR} from '../../Resources/Color/Color';
 
 export const ForgetPasswordView = {
   marginTop: responsiveHeight(6),
@@ -197,7 +197,7 @@ export const ContainerLookingStyle={
   marginTop: responsiveHeight(1),
   right: responsiveHeight(1.5),
   position: 'absolute',
-  backgroundColor: COLOR_PRIMARY,
+  backgroundColor: COLOR_LOOKING_FOR,
   borderRadius:5,
   top:responsiveHeight(0.5)
 }
