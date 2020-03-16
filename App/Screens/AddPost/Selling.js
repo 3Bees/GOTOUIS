@@ -77,6 +77,7 @@ export const Selling = ({navigation}) => {
   const [visible, setVisible] = useState(false);
   const [lat, setLat] = useState('');
   const [lng, setLng] = useState('');
+  const[image,setImage]=useState('')
 
 
   useEffect(()=>{
@@ -143,6 +144,7 @@ export const Selling = ({navigation}) => {
       } else if (response.error) {
       } else if (response.customButton) {
       } else {
+        setImage(response.uri)
         console.log('image');
         ImageResizer.createResizedImage(
           response['uri'],
@@ -309,11 +311,15 @@ export const Selling = ({navigation}) => {
             <TouchableOpacity
               onPress={() => handleChoosePhoto()}
               style={ViewStyleImage}>
-              <FontAwesome5
-                name="image"
-                size={responsiveFontSize(3)}
-                color={COLOR_PRIMARY}
-              />
+              {image ? (
+                <Image source={{uri: image}} style={{height:responsiveHeight(14),width:responsiveWidth(28)}}/>
+              ) : (
+                <FontAwesome5
+                  name="image"
+                  size={responsiveFontSize(3)}
+                  color={COLOR_PRIMARY}
+                />
+              )}
             </TouchableOpacity>
             <View style={buttonView}>
               <Button checked pressme={() => check()}>

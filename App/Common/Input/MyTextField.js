@@ -7,6 +7,7 @@ import {
   SECONDARY_COLOR,
   TEXTINPUT_COLOR,
 } from '../../Resources/Color/Color';
+import { responsiveWidth } from 'react-native-responsive-dimensions';
 
 const MyTextField = ({
   label,
@@ -26,11 +27,16 @@ const MyTextField = ({
       keyboardType={keyboardType || 'default'}
       secureTextEntry={secureTextEntry || false}
       onChangeText={txt => onChangeText(txt)}
-      autoCapitalize={'none'}
+      autoCapitalize={'sentences'}
       editable={editable}
       tintColor={COLOR_PRIMARY}
       lineType="solid"
       lineWidth={1}
+      numberOfLines={4}
+      multiline={true}
+      inputContainerStyle={{width:responsiveWidth(90)}}
+      containerStyle={{width:responsiveWidth(90)}}
+      style={{width:responsiveWidth(90)}}
     />
   );
 };

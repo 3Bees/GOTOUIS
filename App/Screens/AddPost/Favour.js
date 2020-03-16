@@ -68,6 +68,7 @@ export const Favour = ({navigation}) => {
   const [price, setPrice] = useState('');
   const [location, setLoction] = useState('');
   const [Picture, setPicture] = useState('');
+  const [image, setImage] = useState('');
 
   const [search, setSearch] = useState('');
   const [id, setId] = useState('');
@@ -76,17 +77,16 @@ export const Favour = ({navigation}) => {
   const [lat, setLat] = useState('');
   const [lng, setLng] = useState('');
 
-
-  useEffect(()=>{
-    if(!location){
-      locat()
+  useEffect(() => {
+    if (!location) {
+      locat();
     }
-  })
+  });
 
-  const locat=async()=>{
-    let data=await AsyncStorage.getItem('name')
-    setLoction(data)
-  }
+  const locat = async () => {
+    let data = await AsyncStorage.getItem('name');
+    setLoction(data);
+  };
 
   const saveData = async item => {
     setLat(item.lat);
@@ -113,16 +113,16 @@ export const Favour = ({navigation}) => {
       .catch(error => alert('error', error));
   };
 
-const  check = async() => {
+  const check = async () => {
     console.log('i m here');
-    
+
     let lat = await AsyncStorage.getItem('lat');
     let lng = await AsyncStorage.getItem('lon');
     new ApiManager()
-      .createPost(title, Description, 12, lat,lng, Picture, '1')
+      .createPost(title, Description, 12, lat, lng, Picture, '1')
       .then(res => {
         if (res) {
-          navigation.navigate("Home");
+          navigation.navigate('Home');
         }
         console.log(res);
       })
@@ -143,6 +143,7 @@ const  check = async() => {
       } else if (response.customButton) {
       } else {
         console.log('image');
+        setImage(response.uri);
         ImageResizer.createResizedImage(
           response['uri'],
           Dimensions.get('window').width,
@@ -212,10 +213,12 @@ const  check = async() => {
               />
               <MyTextField
                 label="about"
-                value={Description}
+                value={Description.toUpperCase()}
                 onChangeText={text => {
                   setDescription(text);
                 }}
+                numberOfLines={4}
+                style={{width: responsiveWidth(24)}}
               />
             </View>
             <View style={ViewContainer}>
@@ -241,7 +244,7 @@ const  check = async() => {
                       </TouchableOpacity>
                     ) : (
                       <TouchableOpacity onPress={() => setVisible(true)}>
-                        <Text>{location?location:'Search Location'}</Text>
+                        <Text>{location ? location : 'Search Location'}</Text>
                       </TouchableOpacity>
                     )}
                   </View>
@@ -250,8 +253,9 @@ const  check = async() => {
                     onChangeText={term => {
                       searchUpdated(term);
                     }}
-                    placeholder={location?location:"Search Location"}
+                    placeholder={location ? location : 'Search Location'}
                     onFocus={() => setVisible(true)}
+                    numberOfLines={1}
                   />
                 )}
               </View>
@@ -290,7 +294,7 @@ const  check = async() => {
                                 marginRight: responsiveWidth(4),
                               }}
                             />
-                            <Text>{item.display_name}</Text>
+                            <Text numberOfLines={1}>{item.display_name}</Text>
                           </TouchableOpacity>
                         );
                       });
@@ -301,11 +305,15 @@ const  check = async() => {
             <TouchableOpacity
               onPress={() => handleChoosePhoto()}
               style={ViewStyleImage}>
-              <FontAwesome5
-                name="image"
-                size={responsiveFontSize(3)}
-                color={COLOR_PRIMARY}
-              />
+              {image ? (
+                <Image source={{uri: image}} style={{height:responsiveHeight(14),width:responsiveWidth(28)}}/>
+              ) : (
+                <FontAwesome5
+                  name="image"
+                  size={responsiveFontSize(3)}
+                  color={COLOR_PRIMARY}
+                />
+              )}
             </TouchableOpacity>
             <View style={buttonView}>
               <Button checked pressme={() => check()}>

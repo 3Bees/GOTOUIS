@@ -35,7 +35,11 @@ export const ClosePost = ({navigation}) => {
   const closePost = id => {
     new ApiManager()
       .closePost(id)
-      .then(res => console.log(res))
+      .then(res =>{if(res){
+        console.log("res",res)
+        alert("This Post is Closed")
+        navigation.navigate('Home')
+      }})
       .catch(error => console.log(error));
   };
   useEffect(() => {
@@ -84,7 +88,7 @@ export const ClosePost = ({navigation}) => {
                 fontStyle: 'normal',
                 fontSize: responsiveFontSize(3),
               }}>
-              {data.data?data.data.Post.Description:'data'}
+              {data.data?data.data.Post.Subject:'data'}
             </Text>
           </View>
           <View

@@ -107,7 +107,8 @@ export const Home = ({navigation}) => {
   useEffect(() => {
     if (data.data == undefined) {
       Data();
-    }  const navFocusListener = navigation.addListener('didFocus', () => {
+    }
+    const navFocusListener = navigation.addListener('didFocus', () => {
       // do some API calls here
       Data();
     });
@@ -132,7 +133,7 @@ export const Home = ({navigation}) => {
           .then(res => {
             dispatch({type: 'USER', payload: res.data.Profile});
           })
-          .catch(res =>alert(res));
+          .catch(res => alert(res));
       })
       .catch(err => {
         setLoading(false);
@@ -247,7 +248,7 @@ export const Home = ({navigation}) => {
               {search ? (
                 <TouchableOpacity
                   style={crossContainer}
-                  onPress={() => setSearch('')}>
+                  onPress={() => setSearch('')}>{console.log()}
                   <Entypo
                     name="circle-with-cross"
                     size={responsiveFontSize(3)}
@@ -296,13 +297,22 @@ export const Home = ({navigation}) => {
               data={data.data['Posts']}
               keyExtractor={item => item.id}
               renderItem={(item, index) => {
+                console.log("data",item.item.Activated)
                 return (
-                  <View>
-                    {item.item.Type == 3 ? (
+                  <View>{item.item.Activated==true?
+                    (!item.item.Picture ? (
                       <TouchableOpacity
-                        onPress={() =>
-                          navigation.navigate('Gymmate', {id: item.item._id})
-                        }
+                        onPress={() => {
+                          if (User.user._id == item.item.User._id) {
+                            navigation.navigate('EditDetails', {
+                              id: item.item._id,
+                            });
+                          } else {
+                            navigation.navigate('Gymmate', {
+                              id: item.item._id,
+                            });
+                          }
+                        }}
                         style={LookingContainer}>
                         <View style={LookingTopTextContainer}>
                           <Text style={LookingName}>{item.item.Subject}</Text>
@@ -314,13 +324,29 @@ export const Home = ({navigation}) => {
                                 Platform.OS === 'android'
                                   ? 'Muli-Regular'
                                   : null,
-                            }}>
-                            {item.item.Description}
+                            }}>{console.log("des>>>>>>>",item.item.Subject)}
+                            {item.item.Subject}
                           </Text>
                         </View>
-                        <View style={LookingForTextContainer}>
-                          <Text style={lookingForText}>Looking For</Text>
-                        </View>
+                        {item.item.Type == 0 ? (
+                          <View style={StatusContainer}>
+                            <Text style={lookingForText}>Donation</Text>
+                          </View>
+                        ) : item.item.Type == 1 ? (
+                          <View style={StatusContainerFavour}>
+                            <Text style={lookingForText}>Favour</Text>
+                          </View>
+                        ) : item.item.Type == 2 ? (
+                          <View style={StatusContainerSell}>
+                            <Text style={lookingForText}>
+                              ${item.item.Price}
+                            </Text>
+                          </View>
+                        ) : (
+                          <View style={LookingForTextContainer}>
+                            <Text style={lookingForText}>Looking For</Text>
+                          </View>
+                        )}
                         <View style={LookLocationpinCotainer}>
                           <View style={UserDetailContainer}>
                             <Image
@@ -389,11 +415,13 @@ export const Home = ({navigation}) => {
                               id: item.item._id,
                             });
                           } else {
-                            navigation.navigate('Detail', {id: item.item._id});
+                            navigation.navigate('Detail', {
+                              id: item.item._id,
+                            });
                           }
                         }}>
                         <View style={listView2}>
-                          <Text style={TextDes}>{item.item.Description}</Text>
+                          <Text style={TextDes}>{item.item.Subject}</Text>
                           <View style={imageView2}>
                             <Image
                               style={imageStyle}
@@ -475,6 +503,31 @@ export const Home = ({navigation}) => {
                                   </Text>
                                 </View>
                               </View>
+                            ) : item.item.Type == 3 ? (
+                              <View>
+                                <View style={LookingForTextContainer}>
+                                  <Text style={StatusText}>
+                                    {'Looking For'}
+                                  </Text>
+                                </View>
+                                <View style={locationpinContainer}>
+                                  <SimpleLineIcons
+                                    name="location-pin"
+                                    size={responsiveFontSize(1.5)}
+                                    color={COLOR_BACKGROUND}
+                                    style={[locationpinStyle2]}
+                                  />
+                                  <Text
+                                    style={[
+                                      locationpinText,
+                                      {
+                                        color: 'white',
+                                      },
+                                    ]}>
+                                    {calculateLoc(item.item.Location)} KM
+                                  </Text>
+                                </View>
+                              </View>
                             ) : (
                               <View>
                                 <View style={StatusContainerSell}>
@@ -489,7 +542,11 @@ export const Home = ({navigation}) => {
                                     size={responsiveFontSize(2)}
                                     style={{bottom: 2}}
                                   />
-                                  <Text style={GestureNumberText}>{item.item.Likes?item.item.Likes.length:0}</Text>
+                                  <Text style={GestureNumberText}>
+                                    {item.item.Likes
+                                      ? item.item.Likes.length
+                                      : 0}
+                                  </Text>
                                   <SimpleLineIcons
                                     name="location-pin"
                                     size={responsiveFontSize(1.5)}
@@ -511,7 +568,7 @@ export const Home = ({navigation}) => {
                           </LinearGradient>
                         </ImageBackground>
                       </TouchableOpacity>
-                    )}
+                    )):null}
                   </View>
                 );
               }}

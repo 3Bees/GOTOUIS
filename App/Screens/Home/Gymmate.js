@@ -83,6 +83,17 @@ export const Gymmate = ({navigation}) => {
         .catch(err => console.log(err));
     }
   });
+  const postData = () => {
+    new ApiManager()
+      .getPostbyId(id)
+      .then(async res => {
+        let name = await AsyncStorage.getItem('name');
+        setName(name);
+        console.log('res', res);
+        setData(res);
+      })
+      .catch(err => console.log(err));
+  };
   const CreateConversation = id => {
     console.log(id);
     new ApiManager()
@@ -207,7 +218,9 @@ export const Gymmate = ({navigation}) => {
                     color={TEXTINPUT_COLOR}
                     style={locationPins3}
                   />
-                  <Text style={distanceText}>{data.data.Post.Distance?data.data.Post.Distance:'0'} km</Text>
+                  <Text style={distanceText}>
+                    {data.data.Post.Distance ? data.data.Post.Distance : '0'} km
+                  </Text>
                 </View>
                 <View style={ViewforSpace}>
                   <View style={ViewforSpace2} />
@@ -240,11 +253,21 @@ export const Gymmate = ({navigation}) => {
                     value={comment}
                     onChangeText={text => setComment(text)}
                     onFocus={() => setFocusState(true)}
-                  />
-                  <Image
-                    style={sendmsgImage}
-                    source={require('../../Asset/circlesend.png')}
-                  />
+                  />{
+                    console.log(data.data.Post._id)
+                  }
+                  <TouchableOpacity
+                    onPress={() => {
+                      CommentPost(data.data.Post._id);
+                      setComment('');
+                      postData();
+                    }}
+                    style={sendmsgImage}>
+                    <Image
+                      style={sendmsgImage}
+                      source={require('../../Asset/circlesend.png')}
+                    />
+                  </TouchableOpacity>
                 </View>
               </ScrollView>
             </KeyboardAvoidingView>

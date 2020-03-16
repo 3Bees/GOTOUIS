@@ -8,6 +8,7 @@ const client = new ApolloClient({
 
 export default class ApiManager {
   postComment = async (post, Comment) => {
+    console.log('posting', post, Comment);
     let query = gql`
     mutation {
       CommentCreate(data: { PostId: "${post}", Text: "${Comment}" }) {
@@ -16,12 +17,20 @@ export default class ApiManager {
         User {
           _id
           Name
+          Email
+          Photo
+          Rating
+          Badge
         }
         Reply {
           Text
           User {
             _id
             Name
+            Email
+            Photo
+            Rating
+            Badge
           }
         }
       }
@@ -36,15 +45,19 @@ export default class ApiManager {
         },
       }).mutate({mutation: query});
       if (data) {
+        console.log("data>>>>>>>>>>>",data)
         return data;
       }
     } catch (error) {
+      error.map((item)=>{
+        console.log("data>>>>>>>>>>>error",item.Error)
+      })
       alert(error);
     }
   };
 
   UserPost = async id => {
-    console.log("id,id",id)
+    console.log('id,id', id);
     let query = gql`
     {
       UserPosts(UserId: "${id}") {
@@ -83,13 +96,12 @@ export default class ApiManager {
         return data;
       }
     } catch (error) {
-      alert( error);
+      alert(error);
     }
   };
 
   UserProfile = async id => {
-    
-    console.log("id",id)
+    console.log('id', id);
     let query = gql`
       {
         Profile(UserId: "${id}") {
@@ -114,7 +126,7 @@ export default class ApiManager {
         return data;
       }
     } catch (error) {
-      alert( error);
+      alert(error);
     }
   };
   getPostbyId = async postid => {
@@ -613,25 +625,23 @@ export default class ApiManager {
       alert(error);
     }
   };
-  Conversation = async chat_id => {
-    let query = gql`
-    SendMessage(ChatId:"${chat_id}") {
-      _id
-     Text
-     Status
-     Sender {
-       _id
-       Name
-       Email
-       Password
-       Rating
-     }
-     CreatedAt
-   }
+  Conversation = async chat_id => {  
+    let token = await AsyncStorage.getItem('token');
+    let query = gql` {
+      NewMessage(ChatId: "${chat_id}", Token: "${`Bearer` +token}") {
+        _id
+        Text
+        Status
+        Sender {
+          _id
+          Name
+        }
+        CreatedAt
+      }
     }
   `;
     try {
-      let token = await AsyncStorage.getItem('token');
+    
       let data = await new ApolloClient({
         uri: 'https://api.gotoapp.io/graphql',
         headers: {
@@ -743,7 +753,7 @@ export default class ApiManager {
     mutation {
       CreateConversation(Participants: ["${c_user_id}", "${p_user_id}"]) {
         _id
-        Messages {
+        LastMessage {
           _id
           Text
           Status
@@ -755,6 +765,8 @@ export default class ApiManager {
           }
           CreatedAt
         }
+        CreatedAt
+        UnreadMessages
         Participants {
           _id
           Name

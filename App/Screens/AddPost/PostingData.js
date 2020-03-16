@@ -77,6 +77,7 @@ export const PostAdd = ({navigation}) => {
   const [visible, setVisible] = useState(false);
   const [lat, setLat] = useState('');
   const [lng, setLng] = useState('');
+  const[image,setImage]=useState('')
   useEffect(()=>{
     if(!location){
       locat()
@@ -101,6 +102,7 @@ export const PostAdd = ({navigation}) => {
       } else if (response.error) {
       } else if (response.customButton) {
       } else {
+        setImage(response.uri)
         console.log('image');
         ImageResizer.createResizedImage(
           response['uri'],
@@ -296,11 +298,15 @@ export const PostAdd = ({navigation}) => {
             <TouchableOpacity
               onPress={() => handleChoosePhoto()}
               style={ViewStyleImage}>
-              <FontAwesome5
-                name="image"
-                size={responsiveFontSize(6)}
-                color={COLOR_PRIMARY}
-              />
+              {image ? (
+                <Image source={{uri: image}} style={{height:responsiveHeight(14),width:responsiveWidth(28)}}/>
+              ) : (
+                <FontAwesome5
+                  name="image"
+                  size={responsiveFontSize(3)}
+                  color={COLOR_PRIMARY}
+                />
+              )}
             </TouchableOpacity>
             <View style={buttonView}>
               <Button checked pressme={() => check()}>
