@@ -180,6 +180,30 @@ const  check = async yes => {
         alert(err);
       });
   };
+  const Place = async () => {
+    let loc = await AsyncStorage.getItem('name');
+
+    let lat = await AsyncStorage.getItem('lat');
+    let lng = await AsyncStorage.getItem('lon');
+    
+      var requestOptions = {
+        method: 'POST',
+        redirect: 'follow',
+      };
+
+      fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=-34.44076&lon=-58.70521`,
+        requestOptions,
+      )
+        .then(response => response.text())
+        .then(msgs => {
+          console.log('datatatat', msgs);
+        })
+        .catch(error => {
+          console.log('error', error);
+        });
+    
+  };
 
   return (
     <ScrollView style={Container}>
@@ -267,6 +291,7 @@ const  check = async yes => {
                       pressme={() => {
                         toggleModal();
                         check(1);
+                        Place()
                       }}>
                       Yes
                     </Button>

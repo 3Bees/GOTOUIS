@@ -139,6 +139,7 @@ export const Home = ({navigation}) => {
         setLoading(false);
       });
   };
+  
 
   const calculateLoc = item => {
     let distance = geolib.getPreciseDistance(
@@ -373,7 +374,7 @@ export const Home = ({navigation}) => {
                                         : 'Muli',
                                     color: '#76807C',
                                   }}>
-                                  3.4
+                                 {item.item.User.Rating?item.item.User.Rating:0} 
                                 </Text>
                               </View>
                             </View>

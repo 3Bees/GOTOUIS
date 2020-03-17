@@ -314,7 +314,6 @@ export const locationPin={
 }
 export const locationPins3={
   top:Platform.OS === 'android' ? null:responsiveHeight(0.8),
-
   right: responsiveWidth(19),
   position: 'absolute',
   alignSelf: 'center',
@@ -482,7 +481,6 @@ export const containerDonation={
   bottom: responsiveHeight(3),
   right: responsiveWidth(4.5),
   position: 'absolute',
-  backgroundColor: COLOR_DONATE,
   borderRadius:5
 }
 export const hearto={flexDirection:'row',width:'15%',marginLeft:responsiveWidth(80),justifyContent:'space-between'}

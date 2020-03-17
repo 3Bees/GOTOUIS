@@ -83,6 +83,8 @@ import {
   COLOR_FAVOUR,
   TEXTINPUT_COLOR,
   SECONDARY_COLOR,
+  COLOR_SELL,
+  COLOR_LOOKING_FOR,
 } from '../../Resources/Color/Color';
 import {ViewButtonContainer, textInputField, SendButton} from '../Chat/Style';
 import ApiManager from '../../ApiManager/ApiManager';
@@ -121,6 +123,8 @@ export const Detail = ({navigation}) => {
     new ApiManager()
       .getPostbyId(id)
       .then(res => {
+        console.log("res>>>>>>>>>>>>",res)
+        console.log("res.data.Post.Comments<<<<<<<<<<<<<<<",res.data.Post.Comments)
         let distance = geolib.getPreciseDistance(
           {latitude: lat, longitude: long},
           {
@@ -128,9 +132,7 @@ export const Detail = ({navigation}) => {
             longitude: res.data.Post.Location.Lon,
           },
         );
-        setLocation(geolib.convertDistance(distance, 'km').toFixed(2));
-        console.log('res', geolib.convertDistance(distance, 'km').toFixed(2));
-
+        setLocation(geolib.convertDistance(distance, 'km').toFixed(1));
         setData(res);
         setload(true);
       })
@@ -173,6 +175,31 @@ export const Detail = ({navigation}) => {
       .postComment(post, comment)
       .then(resp => console.log(resp))
       .catch(error => console.log(error));
+  };
+  var periods = {
+    month: 30 * 24 * 60 * 60 * 1000,
+    week: 7 * 24 * 60 * 60 * 1000,
+    day: 24 * 60 * 60 * 1000,
+    hour: 60 * 60 * 1000,
+    minute: 60 * 1000,
+  };
+
+  const formatTime = timeCreated => {
+    var diff = Date.now() - timeCreated;
+
+    if (diff > periods.month) {
+      // it was at least a month ago
+      return Math.floor(diff / periods.month) + ' months';
+    } else if (diff > periods.week) {
+      return Math.floor(diff / periods.week) + ' weeks';
+    } else if (diff > periods.day) {
+      return Math.floor(diff / periods.day) + ' days';
+    } else if (diff > periods.hour) {
+      return Math.floor(diff / periods.hour) + ' hours';
+    } else if (diff > periods.minute) {
+      return Math.floor(diff / periods.minute) + ' minutes';
+    }
+    return 'Just now';
   };
 
   return (
@@ -233,13 +260,28 @@ export const Detail = ({navigation}) => {
                     />
                   </TouchableOpacity>
                 </View>
-                <TouchableOpacity style={containerDonation}>
+                <TouchableOpacity
+                  style={[
+                    containerDonation,
+                    {
+                      backgroundColor:
+                        data.data.Post.Type == 0
+                          ? COLOR_DONATE
+                          : data.data.Post.Type == 1
+                          ? COLOR_FAVOUR
+                          : data.data.Post.Type == 2
+                          ? COLOR_SELL
+                          : COLOR_LOOKING_FOR,
+                    },
+                  ]}>
                   <Text style={StatusText}>
-                    {data.data.Type == 0
+                    {data.data.Post.Type == 0
                       ? 'Donation'
-                      : data.data.Type == 1
+                      : data.data.Post.Type == 1
                       ? 'Favour'
-                      : 'Sell'}
+                      : data.data.Post.Type == 2
+                      ? data.data.Post.Price
+                      : 'Looking For'}
                   </Text>
                 </TouchableOpacity>
               </LinearGradient>
@@ -275,7 +317,7 @@ export const Detail = ({navigation}) => {
                     color={COLOR_PRIMARY}
                   />
                 </TouchableOpacity>
-                {console.log('data.data.User', data.data.Post.User)}
+                {console.log('data.data.User', data.data.Post.Comments)}
               </View>
             </View>
           )}>
@@ -314,10 +356,14 @@ export const Detail = ({navigation}) => {
                   color={COLOR_FAVOUR}
                   style={starIcon}
                 />
-                <Text style={ratingText}>3.4</Text>
+                <Text style={ratingText}>
+                  {data.data.Post.User.Rating ? data.data.Post.User.Rating : 0}
+                </Text>
               </View>
             </TouchableOpacity>
-            <Text style={timeAgo}>Added an hour ago</Text>
+            <Text style={timeAgo}>
+              Added {formatTime(data.data.Post.CreatedAt)} ago
+            </Text>
             <View style={ViewforSpace}>
               <View style={ViewforSpace2} />
             </View>
@@ -369,7 +415,8 @@ export const Detail = ({navigation}) => {
                 <Image source={require('../../Asset/Vector.png')} />
               </TouchableOpacity>
             </View>
-            {data.data.Post.Comments.map(item => {
+            {data.data.Post.Comments.map((item,index )=> {
+              console.log("item>>>>>>>>>>>>>>>>>>>>",item,index)
               return (
                 <ScrollView>
                   <View style={containerImage}>
@@ -394,7 +441,7 @@ export const Detail = ({navigation}) => {
                       {item.User.Name}
                     </Text>
                   </View>
-                  <Text style={Comment}>{item.Text}</Text>
+                  <Text style={Comment}>{item.Text}{index}</Text>
                 </ScrollView>
               );
             })}

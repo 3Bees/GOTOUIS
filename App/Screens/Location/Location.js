@@ -52,7 +52,7 @@ export const Location = ({navigation}) => {
 
   useEffect(() => {
     setId(navigation.state.params.id);
-    Place()
+    // Place()
   });
 
   const Place =async() => {
@@ -64,6 +64,7 @@ export const Location = ({navigation}) => {
     setLocation(loc)
     // setSearch(text);
    if(locName==false){ 
+    setLocname(true)
      console.log("i m here")
     var requestOptions = {
       method: 'POST',
@@ -79,7 +80,9 @@ export const Location = ({navigation}) => {
         console.log('datatatat', msgs);
         // setData([JSON.parse(msgs)]);
       })
-      .catch(error => console.log('error', error));
+      .catch(error => {
+        setLocname(true)
+        console.log('error', error)});
    }
   };
 

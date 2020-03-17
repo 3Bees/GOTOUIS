@@ -148,6 +148,7 @@ export default class ApiManager {
           Name
           Email
           Photo
+          Rating
         }
         Location{
           Lat
@@ -184,6 +185,7 @@ export default class ApiManager {
         },
       }).query({query});
       if (data) {
+        console.log("data>>>>>>>>>>>>>>>>>>>>>>>",data.data.Post.Comments)
         return data;
       }
     } catch (error) {
@@ -549,6 +551,7 @@ export default class ApiManager {
           Name
           Email
           Photo
+          Rating
         }
         Likes
         Type
