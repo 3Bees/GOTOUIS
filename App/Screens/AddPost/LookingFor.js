@@ -116,7 +116,7 @@ export const LookingFor = ({navigation}) => {
     let lat = await AsyncStorage.getItem('lat');
     let lng = await AsyncStorage.getItem('lon');
     new ApiManager()
-      .createPostPrice(title, Description, 12, lat, lng, Picture, '3')
+      .createPostPrice(title, Description, Price, lat, lng, Picture, '3')
       .then(res => {
         if (res) {
           navigation.navigate("Home");
