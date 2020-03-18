@@ -240,13 +240,18 @@ export const Gymmate = ({navigation}) => {
                   />
                   <View style={userNameContainer}>
                     <Text style={userName}>{data.data.Post.User.Name}</Text>
+                    {
+                      data.data.Post.User.Rating?<View
+                      style={{flexDirection:'row'}}>
                     <Entypo
                       name="star"
                       size={responsiveFontSize(2)}
                       color={COLOR_FAVOUR}
                       style={starIcon}
                     />
-                    <Text style={ratingText}>{data.data.Post.User.Rating?data.data.Post.User.Rating:0}</Text>
+                    <Text style={ratingText}>{data.data.Post.User.Rating}</Text>
+                      </View>:null
+                    }
                   </View>
                 </TouchableOpacity>
                 <Text style={timeAgo}>Added {formatTime(data.data.Post.CreatedAt)} ago</Text>
@@ -278,7 +283,31 @@ export const Gymmate = ({navigation}) => {
                 <View style={ViewforSpace}>
                   <View style={ViewforSpace2} />
                 </View>
-                <Text style={interactionText}>Interactions</Text>
+                <View style={{flexDirection: 'row', flex: 1}}>
+              <Text style={interactionText}>Interactions</Text>
+              <View
+                style={{
+                  width: responsiveWidth(55),
+                }}
+              />
+              <TouchableOpacity
+                style={{
+                  height: responsiveHeight(8),
+                  width: responsiveHeight(8),
+                  borderRadius: responsiveHeight(8),
+                  alignItems: 'flex-end',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+                onPress={() => {
+                  CreateConversation(data.data.Post.User._id);
+                }}>
+                <Image style={{
+                  height: responsiveHeight(8),
+                  width: responsiveHeight(8),
+                }} source={require('../../Asset/unnamed.png')} />
+              </TouchableOpacity>
+            </View>
                 {data.data.Post.Comments.map(item => {
                   return (
                     <View>

@@ -225,17 +225,20 @@ export const UserProfile = ({navigation}) => {
               </View>
               <Text style={userName}>{userProfile.data.Profile.Name}</Text>
               <View style={DirectionRow}>
-                <Entypo
-                  name="star"
-                  size={responsiveFontSize(1.8)}
-                  style={RatingStarStyle}
-                  color={'#DE8D00'}
-                />
-                <Text style={textstyl}>
-                  {userProfile.data.Profile.Rating
-                    ? userProfile.data.Profile.Rating
-                    : 3.4}
-                </Text>
+                {userProfile.data.Profile.Rating ? (
+                  <View>
+                    <Entypo
+                      name="star"
+                      size={responsiveFontSize(1.8)}
+                      style={RatingStarStyle}
+                      color={'#DE8D00'}
+                    />
+                    <Text style={textstyl}>
+                      {userProfile.data.Profile.Rating}
+                    </Text>
+                  </View>
+                ) : null}
+
                 <SimpleLineIcons
                   name="location-pin"
                   size={responsiveFontSize(1.5)}
@@ -716,8 +719,8 @@ export const UserProfile = ({navigation}) => {
                                   <View>
                                     <Text style={nameItem}>
                                       {item.item.User.Name}
-                                    </Text>
-                                    <View style={starRatingViewlook}>
+                                    </Text>{
+                                      item.item.User.Rating?<View style={starRatingViewlook}>
                                       <Entypo
                                         name="star"
                                         size={responsiveFontSize(1.5)}
@@ -728,9 +731,11 @@ export const UserProfile = ({navigation}) => {
                                           fontSize: responsiveFontSize(1.5),
                                           bottom: 1,
                                         }}>
-                                        3.4
+                                        {item.item.User.Rating}
                                       </Text>
-                                    </View>
+                                    </View>:null
+                                    }
+                                    
                                   </View>
                                 </View>
                                 <View

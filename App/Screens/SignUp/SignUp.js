@@ -97,6 +97,39 @@ export const SignUp = ({navigation}) => {
       })
       .cateh(err => console.log(err));
   };
+  const Place = async () => {
+    let loc = await AsyncStorage.getItem('name');
+
+    let lat = await AsyncStorage.getItem('lat');
+    let lng = await AsyncStorage.getItem('lon');
+
+    var myHeaders = new Headers();
+    myHeaders.append(
+      'User-Agent',
+      'Goto/1.6.7.42 Dalvik/2.1.0 (Linux; U; Android 5.1.1; Android SDK built for x86 Build/LMY48X)',
+    );
+
+    var requestOptions = {
+      method: 'GET',
+      headers: myHeaders,
+      redirect: 'follow',
+    };
+
+    fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`,
+      requestOptions,
+    )
+      .then(response => response.json())
+      .then(async msgs => {
+        console.log('datatatat', msgs.address.suburb+msgs.address.city+msgs.address.country);
+        await AsyncStorage.setItem('name',`${msgs.address.suburb},${msgs.address.city},${msgs.address.country}`)
+        await AsyncStorage.setItem('lat', msgs.lat);
+        await AsyncStorage.setItem('lon', msgs.lon);
+      })
+      .catch(error => {
+        console.log('error', error);
+      });
+  };
 
   return (
     <ScrollView style={Container}>
@@ -136,23 +169,22 @@ export const SignUp = ({navigation}) => {
                 }}>
                 <View
                   style={{
-                    height: responsiveHeight(30),
+                    height: responsiveHeight(15),
                     width: responsiveWidth(90),
                     justifyContent: 'center',
                     alignItems: 'center',
                     backgroundColor: '#fff',
-                    borderRadius: responsiveHeight(5),
                   }}>
                   <View
                     style={{
-                      height: responsiveHeight(17),
+                      height: responsiveHeight(9),
                       justifyContent: 'center',
                       alignItems: 'center',
                     }}>
                     <Text
                       style={{
                         alignSelf: 'center',
-                        fontSize: responsiveFontSize(2.5),
+                        fontSize: responsiveFontSize(2),
                         fontFamily:
                           Platform.OS === 'android' ? 'Muli-Regular' : null,
                         color: TEXT_COLOR,
@@ -163,27 +195,29 @@ export const SignUp = ({navigation}) => {
                   <View
                     style={{
                       flexDirection: 'row',
-                      height: responsiveHeight(10),
                       justifyContent: 'space-evenly',
                       marginHorizontal: responsiveWidth(4),
                     }}>
-                    <Button
-                      checked
-                      pressme={() => {
-                        toggleModal();
-                        check();
+                    <TouchableOpacity
+                    style={{justifyContent:'flex-start'}}
+                      onPress={() => {
+                        toggleModal()
+                        check()
                       }}>
-                      No
-                    </Button>
-                    <View style={{width: responsiveWidth(5)}} />
-                    <Button
-                      checked
-                      pressme={() => {
-                        toggleModal();
-                        check(1);
+                      <Text>
+                      No</Text>
+                    </TouchableOpacity>
+                    <View style={{width: responsiveWidth(35)}} />
+                    <TouchableOpacity
+                      onPress={() => {
+                        toggleModal()
+                        check(1)
+                        Place()
                       }}>
+                      <Text>
                       Yes
-                    </Button>
+                      </Text>
+                    </TouchableOpacity>
                   </View>
                 </View>
               </View>
@@ -204,6 +238,7 @@ export const SignUp = ({navigation}) => {
             </View>
             <View style={[ContainerInput, {marginTop: responsiveHeight(-1)}]}>
               <MyTextField
+                autoCapitalize={'words'}
                 label="Name"
                 value={name}
                 onChangeText={text => setName(text)}
@@ -211,6 +246,7 @@ export const SignUp = ({navigation}) => {
             </View>
             <View style={ContainerInput}>
               <MyTextField
+              autoCapitalize={'none'}
                 label="Email"
                 value={email}
                 onChangeText={text => setEmail(text)}

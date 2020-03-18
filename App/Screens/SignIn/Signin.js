@@ -94,7 +94,7 @@ export const Signin = ({navigation}) => {
     }
   };
 
-  const  signIn = async () => {
+  const signIn = async () => {
     try {
       await GoogleSignin.hasPlayServices();
       const userInfo = await GoogleSignin.signIn();
@@ -112,7 +112,7 @@ export const Signin = ({navigation}) => {
     }
   };
 
-  const  loginFacebook = async () => {
+  const loginFacebook = async () => {
     try {
       let result = await LoginManager.logInWithPermissions([
         'public_profile',
@@ -137,7 +137,7 @@ export const Signin = ({navigation}) => {
     }
   };
 
-  const  callback = token => {
+  const callback = token => {
     // console.log(
     //   token,
     //   new GraphRequestManager().addRequest(infoRequest).start(),
@@ -158,7 +158,7 @@ export const Signin = ({navigation}) => {
     new GraphRequestManager().addRequest(infoRequest).start();
   };
 
-const  check = async yes => {
+  const check = async yes => {
     getCurrentPosition();
     new ApiManager()
       .SignIn(email, password)
@@ -185,24 +185,33 @@ const  check = async yes => {
 
     let lat = await AsyncStorage.getItem('lat');
     let lng = await AsyncStorage.getItem('lon');
-    
-      var requestOptions = {
-        method: 'POST',
-        redirect: 'follow',
-      };
 
-      fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=-34.44076&lon=-58.70521`,
-        requestOptions,
-      )
-        .then(response => response.text())
-        .then(msgs => {
-          console.log('datatatat', msgs);
-        })
-        .catch(error => {
-          console.log('error', error);
-        });
-    
+    var myHeaders = new Headers();
+    myHeaders.append(
+      'User-Agent',
+      'Goto/1.6.7.42 Dalvik/2.1.0 (Linux; U; Android 5.1.1; Android SDK built for x86 Build/LMY48X)',
+    );
+
+    var requestOptions = {
+      method: 'GET',
+      headers: myHeaders,
+      redirect: 'follow',
+    };
+
+    fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`,
+      requestOptions,
+    )
+      .then(response => response.json())
+      .then(async msgs => {
+        console.log('datatatat', msgs.address.suburb+msgs.address.city+msgs.address.country);
+        await AsyncStorage.setItem('name',`${msgs.address.suburb},${msgs.address.city},${msgs.address.country}`)
+        await AsyncStorage.setItem('lat', msgs.lat);
+        await AsyncStorage.setItem('lon', msgs.lon);
+      })
+      .catch(error => {
+        console.log('error', error);
+      });
   };
 
   return (
@@ -246,23 +255,22 @@ const  check = async yes => {
                 }}>
                 <View
                   style={{
-                    height: responsiveHeight(30),
+                    height: responsiveHeight(15),
                     width: responsiveWidth(90),
                     justifyContent: 'center',
                     alignItems: 'center',
                     backgroundColor: '#fff',
-                    borderRadius: responsiveHeight(5),
                   }}>
                   <View
                     style={{
-                      height: responsiveHeight(17),
+                      height: responsiveHeight(9),
                       justifyContent: 'center',
                       alignItems: 'center',
                     }}>
                     <Text
                       style={{
                         alignSelf: 'center',
-                        fontSize: responsiveFontSize(2.5),
+                        fontSize: responsiveFontSize(2),
                         fontFamily:
                           Platform.OS === 'android' ? 'Muli-Regular' : null,
                         color: TEXT_COLOR,
@@ -273,28 +281,26 @@ const  check = async yes => {
                   <View
                     style={{
                       flexDirection: 'row',
-                      height: responsiveHeight(10),
                       justifyContent: 'space-evenly',
                       marginHorizontal: responsiveWidth(4),
                     }}>
-                    <Button
-                      checked
-                      pressme={() => {
+                    <TouchableOpacity
+                      style={{justifyContent: 'flex-start'}}
+                      onPress={() => {
                         toggleModal();
                         check();
                       }}>
-                      No
-                    </Button>
-                    <View style={{width: responsiveWidth(5)}} />
-                    <Button
-                      checked
-                      pressme={() => {
+                      <Text>No</Text>
+                    </TouchableOpacity>
+                    <View style={{width: responsiveWidth(35)}} />
+                    <TouchableOpacity
+                      onPress={() => {
                         toggleModal();
                         check(1);
-                        Place()
+                        Place();
                       }}>
-                      Yes
-                    </Button>
+                      <Text>Yes</Text>
+                    </TouchableOpacity>
                   </View>
                 </View>
               </View>
@@ -318,6 +324,7 @@ const  check = async yes => {
 
             <View style={[ContainerInput, {marginTop: responsiveHeight(-1)}]}>
               <MyTextField
+                autoCapitalize={'none'}
                 label="Email"
                 // value={Email}
                 // onChangeText={text => dispatch({type:'Email',payload:text})}

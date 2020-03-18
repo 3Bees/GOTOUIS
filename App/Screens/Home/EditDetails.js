@@ -87,7 +87,9 @@ import {
   TEXT_COLOR,
   COLOR_FAVOUR,
   TEXTINPUT_COLOR,
-  SECONDARY_COLOR,COLOR_LOOKING_FOR
+  SECONDARY_COLOR,
+  COLOR_LOOKING_FOR,
+  COLOR_SELL,
 } from '../../Resources/Color/Color';
 import {ViewButtonContainer, textInputField, SendButton} from '../Chat/Style';
 import AsyncStorage from '@react-native-community/async-storage';
@@ -101,6 +103,7 @@ export const EditDetails = ({navigation}) => {
   const [data, setData] = useState({});
   const [load, setload] = useState(false);
   const [location, setLocation] = useState('');
+  const [name, setName] = useState('');
 
   useEffect(() => {
     const isFocused = navigation.isFocused();
@@ -117,6 +120,34 @@ export const EditDetails = ({navigation}) => {
       navFocusListener.remove();
     };
   }, []);
+  const Place = async item => {
+    console.log(item.Lat, item.Lon);
+    var myHeaders = new Headers();
+    myHeaders.append(
+      'User-Agent',
+      'Goto/1.6.7.42 Dalvik/2.1.0 (Linux; U; Android 5.1.1; Android SDK built for x86 Build/LMY48X)',
+    );
+
+    var requestOptions = {
+      method: 'GET',
+      headers: myHeaders,
+      redirect: 'follow',
+    };
+
+    await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${item.Lat}&lon=${item.Lon}&zoom=18&addressdetails=1`,
+      requestOptions,
+    )
+      .then(response => response.json())
+      .then(msgs => {
+        let data = msgs['display_name'];
+        console.log(data);
+        setName(data);
+      })
+      .catch(error => {
+        console.log('error', error);
+      });
+  };
   const postData = async () => {
     let lat = await AsyncStorage.getItem('lat');
     let long = await AsyncStorage.getItem('lon');
@@ -130,8 +161,8 @@ export const EditDetails = ({navigation}) => {
             longitude: res.data.Post.Location.Lon,
           },
         );
-        setLocation(geolib.convertDistance(distance, 'km').toFixed(1))
-
+        setLocation(geolib.convertDistance(distance, 'km').toFixed(1));
+        Place(res.data.Post.Location);
         setData(res);
         setload(true);
       })
@@ -256,7 +287,7 @@ export const EditDetails = ({navigation}) => {
                       : data.data.Post.Type == 1
                       ? 'Favour'
                       : data.data.Post.Type == 2
-                      ? data.data.Post.Price
+                      ? '$' + data.data.Post.Price
                       : 'Looking For'}
                   </Text>
                 </TouchableOpacity>
@@ -310,16 +341,22 @@ export const EditDetails = ({navigation}) => {
               />
               <View style={userNameContainer}>
                 <Text style={userName}>{data.data.Post.User.Name}</Text>
-                <Entypo
-                  name="star"
-                  size={responsiveFontSize(2)}
-                  color={COLOR_FAVOUR}
-                  style={starIcon}
-                />
-                <Text style={ratingText}>{data.data.Post.User.Rating?data.data.Post.User.Rating:0}</Text>
+                {data.data.Post.User.Rating ? (
+                  <View style={{flexDirection:'row'}}>
+                    <Entypo
+                      name="star"
+                      size={responsiveFontSize(2)}
+                      color={COLOR_FAVOUR}
+                      style={starIcon}
+                    />
+                    <Text style={ratingText}>{data.data.Post.User.Rating}</Text>
+                  </View>
+                ) : null}
               </View>
             </TouchableOpacity>
-            <Text style={timeAgo}>Added {formatTime(data.data.Post.CreatedAt)} ago</Text>
+            <Text style={timeAgo}>
+              Added {formatTime(data.data.Post.CreatedAt)} ago
+            </Text>
             <View style={ViewforSpace}>
               <View style={ViewforSpace2} />
             </View>
@@ -327,7 +364,9 @@ export const EditDetails = ({navigation}) => {
             <Text style={detailExe}>{data.data.Post.Description}</Text>
             <Text style={locationText}>Location</Text>
             <View style={DirectionRow}>
-              <Text style={locationNameText}>New Brooklin,UK</Text>
+              <Text style={locationNameText} numberOfLines={1}>
+                {name}
+              </Text>
               <View
                 style={{
                   alignSelf: 'flex-end',
@@ -340,9 +379,7 @@ export const EditDetails = ({navigation}) => {
                   color={TEXTINPUT_COLOR}
                   style={locationPin}
                 />
-                <Text style={distanceText}>
-                  {location ?location : '0'}km
-                </Text>
+                <Text style={distanceText}>{location ? location : '0'}km</Text>
               </View>
             </View>
             <View style={ViewforSpace}>
@@ -351,7 +388,9 @@ export const EditDetails = ({navigation}) => {
 
             <Text style={interactionText}>Interactions</Text>
             {data.data.Post.Comments.map(item => {
-              {/* console.log("item",item) */}
+              {
+                /* console.log("item",item) */
+              }
               return (
                 <View>
                   <View style={containerImage}>

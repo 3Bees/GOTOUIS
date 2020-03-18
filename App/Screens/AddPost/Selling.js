@@ -120,15 +120,31 @@ export const Selling = ({navigation}) => {
     console.log('i m here');
     let lat = await AsyncStorage.getItem('lat');
     let lng = await AsyncStorage.getItem('lon');
+    let Descriptin = Description.replace(/[\r\n]+/g, ' ') + '';
+    let datar = Descriptin.toString();
+    let ttl = title.replace(/[\r\n]+/g, ' ') + '';
+    if(Picture){
     new ApiManager()
-      .createPostPrice(title, Description, price, lat,lng, Picture, '2')
+      .createPostPrice(ttl, datar, price, lat,lng, Picture, '2')
       .then(res => {
         if (res) {
           navigation.navigate("Home");
         }
         console.log(res);
       })
-      .catch(err => alert(err));
+      .catch(err => alert(err));}
+      else{
+        
+    new ApiManager()
+    .createPostPrice2(ttl, datar, price, lat,lng, Picture, '2')
+    .then(res => {
+      if (res) {
+        navigation.navigate("Home");
+      }
+      console.log(res);
+    })
+    .catch(err => alert(err));
+      }
   };
 
   const handleChoosePhoto = () => {
@@ -200,7 +216,7 @@ export const Selling = ({navigation}) => {
                     marginLeft: responsiveHeight(2),
                   },
                 ]}>
-                Selling
+                Sale
               </Text>
             </View>
 
@@ -211,8 +227,14 @@ export const Selling = ({navigation}) => {
                 onChangeText={text => {
                   setTitle(text);
                 }}
+                autoCapitalize={'sentances'}
+                multiline
+                numberOfLines={4}
               />
               <MyTextField
+              numberOfLines={4}
+              autoCapitalize={'sentances'}
+                multiline
                 label="about"
                 value={Description}
                 onChangeText={text => {
@@ -220,6 +242,7 @@ export const Selling = ({navigation}) => {
                 }}
               />
               <MyTextField
+              keyboardType={'numeric'}
                 label="Price"
                 value={price}
                 onChangeText={text => setPrice(text)}
@@ -248,7 +271,7 @@ export const Selling = ({navigation}) => {
                       </TouchableOpacity>
                     ) : (
                       <TouchableOpacity onPress={() => setVisible(true)}>
-                        <Text>{location?location:'Search Location'}</Text>
+                        <Text style={{width:responsiveWidth(70)}} numberOfLines={1}>{location?location:'Search Location'}</Text>
                       </TouchableOpacity>
                     )}
                   </View>

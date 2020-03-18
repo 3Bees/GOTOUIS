@@ -52,7 +52,7 @@ export const Location = ({navigation}) => {
 
   useEffect(() => {
     setId(navigation.state.params.id);
-    // Place()
+    Place()
   });
 
   const Place =async() => {
@@ -63,27 +63,7 @@ export const Location = ({navigation}) => {
     let lng=await AsyncStorage.getItem('lon')
     setLocation(loc)
     // setSearch(text);
-   if(locName==false){ 
-    setLocname(true)
-     console.log("i m here")
-    var requestOptions = {
-      method: 'POST',
-      redirect: 'follow',
-    };
-
-    fetch(
-      `https://nominatim.openstreetmap.org/reverse?format=json&lat=33.7266008&lon=73.0505563&zoom=18&addressdetails=1`,
-      requestOptions,
-    )
-      .then(response => response.text())
-      .then(msgs => {
-        console.log('datatatat', msgs);
-        // setData([JSON.parse(msgs)]);
-      })
-      .catch(error => {
-        setLocname(true)
-        console.log('error', error)});
-   }
+  
   };
 
   const saveData = async item => {
@@ -163,7 +143,7 @@ export const Location = ({navigation}) => {
                     </TouchableOpacity>
                   ) : (
                     <TouchableOpacity onPress={() => setVisible(true)}>
-                      <Text>{location?location:'Search Location'}</Text>
+                      <Text style={{width:responsiveWidth(70)}} numberOfLines={1}>{location?location:'Search Location'}</Text>
                     </TouchableOpacity>
                   )}
                 </View>

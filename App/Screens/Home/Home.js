@@ -249,7 +249,7 @@ export const Home = ({navigation}) => {
               {search ? (
                 <TouchableOpacity
                   style={crossContainer}
-                  onPress={() => setSearch('')}>{console.log()}
+                  onPress={() => setSearch('')}>
                   <Entypo
                     name="circle-with-cross"
                     size={responsiveFontSize(3)}
@@ -298,7 +298,7 @@ export const Home = ({navigation}) => {
               data={data.data['Posts']}
               keyExtractor={item => item.id}
               renderItem={(item, index) => {
-                console.log("data",item.item.Activated)
+                console.log("data",item.item.Picture,item.item.Subject)
                 return (
                   <View>{item.item.Activated==true?
                     (!item.item.Picture ? (
@@ -316,7 +316,7 @@ export const Home = ({navigation}) => {
                         }}
                         style={LookingContainer}>
                         <View style={LookingTopTextContainer}>
-                          <Text style={LookingName}>{item.item.Subject}</Text>
+                          <Text style={LookingName} numberOfLines={2}>{item.item.Subject}</Text>
                           <Text
                             style={{
                               color: '#76807C',
@@ -325,8 +325,8 @@ export const Home = ({navigation}) => {
                                 Platform.OS === 'android'
                                   ? 'Muli-Regular'
                                   : null,
-                            }}>{console.log("des>>>>>>>",item.item.Subject)}
-                            {item.item.Subject}
+                            }} numberOfLines={2}>{console.log("des>>>>>>>",item.item.Subject)}
+                            {item.item.Description}
                           </Text>
                         </View>
                         {item.item.Type == 0 ? (
@@ -358,6 +358,7 @@ export const Home = ({navigation}) => {
                               <Text style={UserName}>
                                 {item.item.User.Name}
                               </Text>
+                              {item.item.User.Rating?
                               <View style={RatingContainer}>
                                 <Entypo
                                   name="star"
@@ -374,9 +375,9 @@ export const Home = ({navigation}) => {
                                         : 'Muli',
                                     color: '#76807C',
                                   }}>
-                                 {item.item.User.Rating?item.item.User.Rating:0} 
+                                 {item.item.User.Rating} 
                                 </Text>
-                              </View>
+                              </View>:null}
                             </View>
                           </View>
                           <View
@@ -422,7 +423,7 @@ export const Home = ({navigation}) => {
                           }
                         }}>
                         <View style={listView2}>
-                          <Text style={TextDes}>{item.item.Subject}</Text>
+                          <Text style={TextDes} numberOfLines={2}>{item.item.Subject}</Text>
                           <View style={imageView2}>
                             <Image
                               style={imageStyle}

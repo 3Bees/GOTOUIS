@@ -115,8 +115,23 @@ export const LookingFor = ({navigation}) => {
  const check = async () => {
     let lat = await AsyncStorage.getItem('lat');
     let lng = await AsyncStorage.getItem('lon');
-    new ApiManager()
-      .createPostPrice(title, Description, Price, lat, lng, Picture, '3')
+    let Descriptin = Description.replace(/[\r\n]+/g, ' ') + '';
+    let datar = Descriptin.toString();
+    let ttl = title.replace(/[\r\n]+/g, ' ') + '';
+    if(Picture){
+      new ApiManager()
+        .createPostPrice(ttl, datar, price, lat,lng, Picture, '2')
+        .then(res => {
+          if (res) {
+            navigation.navigate("Home");
+          }
+          console.log(res);
+        })
+        .catch(err => alert(err));}
+        else{
+          
+      new ApiManager()
+      .createPostPrice2(ttl, datar, price, lat,lng, Picture, '2')
       .then(res => {
         if (res) {
           navigation.navigate("Home");
@@ -124,6 +139,7 @@ export const LookingFor = ({navigation}) => {
         console.log(res);
       })
       .catch(err => alert(err));
+        }
   };
 
   const handleChoosePhoto = () => {
@@ -202,6 +218,8 @@ export const LookingFor = ({navigation}) => {
 
             <View style={[TextInputStyle, {padding: -10}]}>
               <MyTextField
+                autoCapitalize={'sentances'}
+                multiline
                 label="Title"
                 value={title}
                 onChangeText={text => {
@@ -209,6 +227,8 @@ export const LookingFor = ({navigation}) => {
                 }}
               />
               <MyTextField
+                autoCapitalize={'sentances'}
+                multiline
                 label="about"
                 value={Description}
                 onChangeText={text => {
@@ -216,6 +236,7 @@ export const LookingFor = ({navigation}) => {
                 }}
               />
               <MyTextField
+              keyboardType={'numeric'}
                 label="Price"
                 value={price}
                 onChangeText={text => setPrice(text)}
@@ -254,7 +275,7 @@ export const LookingFor = ({navigation}) => {
                       </TouchableOpacity>
                     ) : (
                       <TouchableOpacity onPress={() => setVisible(true)}>
-                        <Text>{location ? location : 'Search Location'}</Text>
+                        <Text style={{width:responsiveWidth(70)}} numberOfLines={1}>{location ? location : 'Search Location'}</Text>
                       </TouchableOpacity>
                     )}
                   </View>

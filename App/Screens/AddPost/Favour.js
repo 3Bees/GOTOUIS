@@ -88,6 +88,8 @@ export const Favour = ({navigation}) => {
     setLoction(data);
   };
 
+ 
+   
   const saveData = async item => {
     setLat(item.lat);
     setLng(item.lon);
@@ -114,12 +116,24 @@ export const Favour = ({navigation}) => {
   };
 
   const check = async () => {
-    console.log('i m here');
-
+    console.log('i m here',Description.replace(/[\r\n]+/g," "));
+let Descriptin=Description.replace(/[\r\n]+/g," ")+""
+let datar=Descriptin.toString()
     let lat = await AsyncStorage.getItem('lat');
     let lng = await AsyncStorage.getItem('lon');
+    let ttl=title.replace(/[\r\n]+/g," ")+""
+    if(Picture){
     new ApiManager()
-      .createPost(title, Description, 12, lat, lng, Picture, '1')
+      .createPost(ttl, datar, 12, lat, lng, Picture, '1')
+      .then(res => {
+        if (res) {
+          navigation.navigate('Home');
+        }
+        console.log(res);
+      })
+      .catch(err => alert(err));}else{
+        new ApiManager()
+      .createPost2(ttl, datar, 12, lat, lng, Picture, '1')
       .then(res => {
         if (res) {
           navigation.navigate('Home');
@@ -127,6 +141,7 @@ export const Favour = ({navigation}) => {
         console.log(res);
       })
       .catch(err => alert(err));
+      }
   };
 
   const handleChoosePhoto = () => {
@@ -205,6 +220,9 @@ export const Favour = ({navigation}) => {
 
             <View style={TextInputStyle}>
               <MyTextField
+              
+              autoCapitalize={'sentances'}
+                multiline
                 label="Title"
                 value={title}
                 onChangeText={text => {
@@ -212,11 +230,15 @@ export const Favour = ({navigation}) => {
                 }}
               />
               <MyTextField
+              autoCapitalize={'sentances'}
+                multiline
                 label="about"
                 value={Description.toUpperCase()}
                 onChangeText={text => {
+                  console.log(text)
                   setDescription(text);
                 }}
+                onkeydown={(ev)=>{console.log("ev",ev["memoizedProps"])}}
                 numberOfLines={4}
                 style={{width: responsiveWidth(24)}}
               />
@@ -244,7 +266,7 @@ export const Favour = ({navigation}) => {
                       </TouchableOpacity>
                     ) : (
                       <TouchableOpacity onPress={() => setVisible(true)}>
-                        <Text>{location ? location : 'Search Location'}</Text>
+                        <Text style={{width:responsiveWidth(70)}} numberOfLines={1}>{location ? location : 'Search Location'}</Text>
                       </TouchableOpacity>
                     )}
                   </View>

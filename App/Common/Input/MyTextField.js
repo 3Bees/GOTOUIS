@@ -17,23 +17,29 @@ const MyTextField = ({
   secureTextEntry,
   style,
   editable = true,
+  multiline,
+  autoCapitalize,
+  numberOfLines,
+  onkeydown
 }) => {
+  console.log("onkeydown")
   return (
     <TextField
+    onKeyPress={onkeydown}
       label={label}
       value={value}
       textColor="#1d211f"
       labelTextStyle={{color: TEXTINPUT_COLOR}}
       keyboardType={keyboardType || 'default'}
-      secureTextEntry={secureTextEntry || false}
+      secureTextEntry={secureTextEntry}
       onChangeText={txt => onChangeText(txt)}
-      autoCapitalize={'sentences'}
+      autoCapitalize={autoCapitalize}
       editable={editable}
       tintColor={COLOR_PRIMARY}
       lineType="solid"
       lineWidth={1}
-      numberOfLines={4}
-      multiline={true}
+      numberOfLines={numberOfLines}
+      multiline={multiline}
       inputContainerStyle={{width:responsiveWidth(90)}}
       containerStyle={{width:responsiveWidth(90)}}
       style={{width:responsiveWidth(90)}}

@@ -69,6 +69,8 @@ export default class ApiManager {
         CommentsCount
         Picture
         Price
+        GaveUp
+        Activated
         Location {
           Lat
           Lon
@@ -628,6 +630,60 @@ export default class ApiManager {
       alert(error);
     }
   };
+
+  createPost2 = async (Subject, Description, price, lat, lng, Picture, Type) => {
+    let type = parseInt(Type);
+    let dist = parseInt(price);
+    let query = gql`
+      mutation {
+        PostCreate(
+          data: {
+            Subject: "${Subject}"
+            Description: "${Description}"
+            Price: ${dist}
+            Location: {Lat: "${lat}", Lon: "${lng}"}
+            Type: ${type}
+          }
+        ) {
+          _id
+          Subject
+          Distance
+          Description
+          UpdatedAt
+          CreatedAt
+          User {
+            _id
+            Name
+            Rating
+            Photo
+            Badge
+            Email
+          }
+          GaveUp
+          Activated
+          Location {
+            Lat
+            Lon
+          }
+        }
+      }
+    `;
+    try {
+      let token = await AsyncStorage.getItem('token');
+      let data = await new ApolloClient({
+        uri: 'https://api.gotoapp.io/graphql',
+        headers: {
+          Authorization: `Bearer  ${token}`,
+        },
+      }).mutate({mutation: query});
+      if (data) {
+        return data;
+      }
+    } catch (error) {
+      alert(error);
+    }
+  };
+
   Conversation = async chat_id => {  
     let token = await AsyncStorage.getItem('token');
     let query = gql` {
@@ -668,6 +724,7 @@ export default class ApiManager {
     Picture,
     Type,
   ) => {
+    console.log("prccccccccccccccccccc",Picture)
     let type = parseInt(Type);
     let dist = parseInt(price);
     let query = gql`
@@ -720,7 +777,67 @@ export default class ApiManager {
       alert(error);
     }
   };
-
+  createPostPrice2 = async (
+    Subject,
+    Description,
+    price,
+    lat,
+    lng,
+    Picture,
+    Type,
+  ) => {
+    console.log("prccccccccccccccccccc",Picture)
+    let type = parseInt(Type);
+    let dist = parseInt(price);
+    let query = gql`
+      mutation {
+        PostCreate(
+          data: {
+            Subject: "${Subject}"
+            Description: "${Description}"
+            Price: ${dist}
+            Location: {Lat: "${lat}", Lon: "${lng}"}
+            Type: ${type}
+          }
+        ) {
+          _id
+          Subject
+          Distance
+          Description
+          UpdatedAt
+          CreatedAt
+          User {
+            _id
+            Name
+            Rating
+            Photo
+            Badge
+            Email
+          }
+          GaveUp
+          Activated
+          Location {
+            Lat
+            Lon
+          }
+        }
+      }
+    `;
+    try {
+      let token = await AsyncStorage.getItem('token');
+      let data = await new ApolloClient({
+        uri: 'https://api.gotoapp.io/graphql',
+        headers: {
+          Authorization: `Bearer  ${token}`,
+        },
+      }).mutate({mutation: query});
+      if (data) {
+        return data;
+      }
+    } catch (error) {
+      alert(error);
+    }
+  };
   QueryRequest = async (name, photo) => {
     let query = gql`
   mutation {

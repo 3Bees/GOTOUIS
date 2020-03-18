@@ -77,17 +77,17 @@ export const PostAdd = ({navigation}) => {
   const [visible, setVisible] = useState(false);
   const [lat, setLat] = useState('');
   const [lng, setLng] = useState('');
-  const[image,setImage]=useState('')
-  useEffect(()=>{
-    if(!location){
-      locat()
+  const [image, setImage] = useState('');
+  useEffect(() => {
+    if (!location) {
+      locat();
     }
-  })
+  });
 
-  const locat=async()=>{
-    let data=await AsyncStorage.getItem('name')
-    setLoction(data)
-  }
+  const locat = async () => {
+    let data = await AsyncStorage.getItem('name');
+    setLoction(data);
+  };
 
   const handleChoosePhoto = () => {
     var options = {
@@ -102,7 +102,7 @@ export const PostAdd = ({navigation}) => {
       } else if (response.error) {
       } else if (response.customButton) {
       } else {
-        setImage(response.uri)
+        setImage(response.uri);
         console.log('image');
         ImageResizer.createResizedImage(
           response['uri'],
@@ -144,16 +144,19 @@ export const PostAdd = ({navigation}) => {
       .catch(error => alert('error', error));
   };
 
-  const check = async() => {   
+  const check = async () => {
     let lat = await AsyncStorage.getItem('lat');
     let lng = await AsyncStorage.getItem('lon');
+    let Descriptin = Description.replace(/[\r\n]+/g, ' ') + '';
+    let datar = Descriptin.toString();
+    let ttl = title.replace(/[\r\n]+/g, ' ') + '';
     console.log();
     new ApiManager()
-      .createPost(title, Description, 12, lat, lng, Picture, '0')
+      .createPost(ttl, datar, 12, lat, lng, Picture, '0')
       .then(res => {
         console.log(res);
         if (res) {
-          navigation.navigate("Home");
+          navigation.navigate('Home');
         }
       })
       .catch(err => alert(err));
@@ -204,10 +207,15 @@ export const PostAdd = ({navigation}) => {
                 label="Title"
                 value={title}
                 onChangeText={text => {
+                  console.log(title);
                   setTitle(text);
                 }}
+                autoCapitalize={'sentances'}
+                multiline
               />
               <MyTextField
+                autoCapitalize={'sentances'}
+                multiline
                 label="About"
                 value={Description}
                 onChangeText={text => {
@@ -238,7 +246,11 @@ export const PostAdd = ({navigation}) => {
                       </TouchableOpacity>
                     ) : (
                       <TouchableOpacity onPress={() => setVisible(true)}>
-                        <Text>{location?location:'Search Location'}</Text>
+                        <Text
+                          style={{width: responsiveWidth(70)}}
+                          numberOfLines={1}>
+                          {location ? location : 'Search Location'}
+                        </Text>
                       </TouchableOpacity>
                     )}
                   </View>
@@ -247,7 +259,7 @@ export const PostAdd = ({navigation}) => {
                     onChangeText={term => {
                       searchUpdated(term);
                     }}
-                    placeholder={location?location:"Search Location"}
+                    placeholder={location ? location : 'Search Location'}
                     onFocus={() => setVisible(true)}
                   />
                 )}
@@ -299,7 +311,13 @@ export const PostAdd = ({navigation}) => {
               onPress={() => handleChoosePhoto()}
               style={ViewStyleImage}>
               {image ? (
-                <Image source={{uri: image}} style={{height:responsiveHeight(14),width:responsiveWidth(28)}}/>
+                <Image
+                  source={{uri: image}}
+                  style={{
+                    height: responsiveHeight(14),
+                    width: responsiveWidth(28),
+                  }}
+                />
               ) : (
                 <FontAwesome5
                   name="image"

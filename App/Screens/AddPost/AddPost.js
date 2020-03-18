@@ -118,7 +118,7 @@ export const AddPost = ({navigation}) => {
               </View>
             </View>
             <View style={ViewFlex7}>
-              <Text style={[TextStyleDo1, {color: '#C8001A'}]}>Selling</Text>
+              <Text style={[TextStyleDo1, {color: '#C8001A'}]}>Sale</Text>
               <Text style={cardText}>
                 Do you want to earn some money selling things you are not
                 using?Post it!

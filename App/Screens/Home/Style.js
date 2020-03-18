@@ -334,6 +334,7 @@ export const locationNameText={
   fontStyle: 'normal',
   fontWeight: 'normal',
   color: TEXTINPUT_COLOR,
+  width:responsiveWidth(50),
   fontSize: responsiveFontSize(2),
 }
 export const locationText={

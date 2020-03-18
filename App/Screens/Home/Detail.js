@@ -123,8 +123,11 @@ export const Detail = ({navigation}) => {
     new ApiManager()
       .getPostbyId(id)
       .then(res => {
-        console.log("res>>>>>>>>>>>>",res)
-        console.log("res.data.Post.Comments<<<<<<<<<<<<<<<",res.data.Post.Comments)
+        console.log('res>>>>>>>>>>>>', res);
+        console.log(
+          'res.data.Post.Comments<<<<<<<<<<<<<<<',
+          res.data.Post.Comments,
+        );
         let distance = geolib.getPreciseDistance(
           {latitude: lat, longitude: long},
           {
@@ -132,6 +135,7 @@ export const Detail = ({navigation}) => {
             longitude: res.data.Post.Location.Lon,
           },
         );
+        Place(res.data.Post.Location);
         setLocation(geolib.convertDistance(distance, 'km').toFixed(1));
         setData(res);
         setload(true);
@@ -201,7 +205,34 @@ export const Detail = ({navigation}) => {
     }
     return 'Just now';
   };
+  const Place = async item => {
+    console.log(item.Lat, item.Lon);
+    var myHeaders = new Headers();
+    myHeaders.append(
+      'User-Agent',
+      'Goto/1.6.7.42 Dalvik/2.1.0 (Linux; U; Android 5.1.1; Android SDK built for x86 Build/LMY48X)',
+    );
 
+    var requestOptions = {
+      method: 'GET',
+      headers: myHeaders,
+      redirect: 'follow',
+    };
+
+    await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${item.Lat}&lon=${item.Lon}&zoom=18&addressdetails=1`,
+      requestOptions,
+    )
+      .then(response => response.json())
+      .then(msgs => {
+        let data = msgs['display_name'];
+        console.log(data);
+        setName(data);
+      })
+      .catch(error => {
+        console.log('error', error);
+      });
+  };
   return (
     <View style={Container}>
       <StatusBar
@@ -350,15 +381,17 @@ export const Detail = ({navigation}) => {
 
               <View style={userNameContainer}>
                 <Text style={userName}>{data.data.Post.User.Name}</Text>
-                <Entypo
-                  name="star"
-                  size={responsiveFontSize(2)}
-                  color={COLOR_FAVOUR}
-                  style={starIcon}
-                />
-                <Text style={ratingText}>
-                  {data.data.Post.User.Rating ? data.data.Post.User.Rating : 0}
-                </Text>
+                {data.data.Post.User.Rating ? (
+                  <View style={{flexDirection:'row'}}>
+                    <Entypo
+                      name="star"
+                      size={responsiveFontSize(2)}
+                      color={COLOR_FAVOUR}
+                      style={starIcon}
+                    />
+                    <Text style={ratingText}>{data.data.Post.User.Rating}</Text>
+                  </View>
+                ) : null}
               </View>
             </TouchableOpacity>
             <Text style={timeAgo}>
@@ -404,7 +437,6 @@ export const Detail = ({navigation}) => {
                   height: responsiveHeight(8),
                   width: responsiveHeight(8),
                   borderRadius: responsiveHeight(8),
-                  backgroundColor: COLOR_PRIMARY,
                   alignItems: 'flex-end',
                   justifyContent: 'center',
                   alignItems: 'center',
@@ -412,11 +444,14 @@ export const Detail = ({navigation}) => {
                 onPress={() => {
                   CreateConversation(data.data.Post.User._id);
                 }}>
-                <Image source={require('../../Asset/Vector.png')} />
+                <Image   style={{
+                  height: responsiveHeight(8),
+                  width: responsiveHeight(8),
+                }} source={require('../../Asset/unnamed.png')} />
               </TouchableOpacity>
             </View>
-            {data.data.Post.Comments.map((item,index )=> {
-              console.log("item>>>>>>>>>>>>>>>>>>>>",item,index)
+            {data.data.Post.Comments.map((item, index) => {
+              console.log('item>>>>>>>>>>>>>>>>>>>>', item, index);
               return (
                 <ScrollView>
                   <View style={containerImage}>
@@ -441,7 +476,7 @@ export const Detail = ({navigation}) => {
                       {item.User.Name}
                     </Text>
                   </View>
-                  <Text style={Comment}>{item.Text}{index}</Text>
+                  <Text style={Comment}>{item.Text}</Text>
                 </ScrollView>
               );
             })}
