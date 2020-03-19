@@ -41,6 +41,7 @@ import {Selling} from '../Screens/AddPost/Selling';
 import {UpdatePost} from '../Screens/AddPost/UpdatePost';
 import {UserProfile} from '../Screens/Profile/UserProfile'
 import AuthLoadingScreen from '../Screens/AuthLoading';
+import {EditGymmate} from '../Screens/Home/EditGymmate';
 
 const MainTab = createBottomTabNavigator(
   {
@@ -140,6 +141,7 @@ const AuthStack = createStackNavigator(
     Inbox: Inbox,
     Detail: Detail,
     Rating: Ratings,
+    EditGymmate:EditGymmate,
     PostingData: PostAdd,
     DonateTo: DonateTo,
     EditDetails: EditDetails,
@@ -149,7 +151,8 @@ const AuthStack = createStackNavigator(
     LookingFor: LookingFor,
     Selling: Selling,
     UpdatePost:UpdatePost,
-    UserProfile:UserProfile
+    UserProfile:UserProfile,
+    
   },
   {
     initialRouteName: 'AuthLoading',

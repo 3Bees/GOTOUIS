@@ -81,7 +81,7 @@ export const Location = ({navigation}) => {
     };
 
     fetch(
-      `https://nominatim.openstreetmap.org/search?city=${text}&format=json`,
+      `https://nominatim.openstreetmap.org/search?q=${text}&format=json&addressdetails=1`,
       requestOptions,
     )
       .then(response => response.text())

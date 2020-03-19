@@ -11,6 +11,7 @@ import {
   ImageBackground,
   ActivityIndicator,
   Dimensions,
+  ScrollView
 } from 'react-native';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -33,6 +34,8 @@ import {
   responsiveFontSize,
   responsiveWidth,
 } from 'react-native-responsive-dimensions';
+
+import SearchInput, {createFilter} from 'react-native-search-filter';
 import {
   COLOR_PRIMARY,
   TEXTINPUT_COLOR,
@@ -52,17 +55,22 @@ import ApiManager from '../../ApiManager/ApiManager';
 import RNFetchBlob from 'react-native-fetch-blob';
 import ImageResizer from 'react-native-image-resizer';
 import AsyncStorage from '@react-native-community/async-storage';
+import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
+const KEYS_TO_FILTERS = ['display_name'];
 
 export const UpdatePost = ({navigation}) => {
   const [rating, setrating] = useState(0);
   const [btnCOlor, setbtnColor] = useState(false);
   const [id, setId] = useState(navigation.state.params.id);
+  const [daata, setDaata] = useState([]);
   const [data, setData] = useState({});
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [Picture, setPicture] = useState('');
   const [location, setLocation] = useState('');
-  const [image,setimage]=useState('')
+  const [image, setimage] = useState('');
+  const [visible, setVisible] = useState(false);
+  const [search, setSearch] = useState('');
 
   const handleChoosePhoto = () => {
     var options = {
@@ -77,8 +85,8 @@ export const UpdatePost = ({navigation}) => {
       } else if (response.error) {
       } else if (response.customButton) {
       } else {
-        setimage(response['uri'])
-        console.log('image',response['uri']);
+        setimage(response['uri']);
+        console.log('image', response['uri']);
         ImageResizer.createResizedImage(
           response['uri'],
           Dimensions.get('window').width,
@@ -97,13 +105,22 @@ export const UpdatePost = ({navigation}) => {
   const UpdatePost = async () => {
     let lat = await AsyncStorage.getItem('lat');
     let long = await AsyncStorage.getItem('lon');
-    console.log("title,description",data.data.Post.Type,data.data.Post.Price)
+    console.log('title,description', data.data.Post.Type, data.data.Post.Price);
     new ApiManager()
-      .editPost(data.data.Post._id, title?title:data.data.Post.Subject, description?description:data.data.Post.Description, `${data.data.Post.Type}`, lat, long, `${data.data.Post.Price}`,Picture?Picture:data.data.Post.Picture)
+      .editPost(
+        data.data.Post._id,
+        title ? title : data.data.Post.Subject,
+        description ? description : data.data.Post.Description,
+        `${data.data.Post.Type}`,
+        lat,
+        long,
+        `${data.data.Post.Price}`,
+        Picture ? Picture : data.data.Post.Picture,
+      )
       .then(res => {
         console.log(res);
         if (res) {
-          navigation.navigate('EditDetails',{id:data.data.Post._id});
+          navigation.navigate('EditDetails', {id: data.data.Post._id});
         }
       })
       .cateh(err => console.log(err));
@@ -121,6 +138,34 @@ export const UpdatePost = ({navigation}) => {
         .catch(err => console.log(err));
     }
   });
+  const saveData = async msgs => {
+    await AsyncStorage.setItem(
+      'name',
+      `${msgs.address.suburb},${msgs.address.city},${msgs.address.country}`,
+    );
+    await AsyncStorage.setItem('lat', msgs.lat);
+    await AsyncStorage.setItem('lon', msgs.lon);
+  };
+
+  const searchUpdated = text => {
+    setSearch(text);
+    var requestOptions = {
+      method: 'POST',
+      redirect: 'follow',
+    };
+
+    fetch(
+      `https://nominatim.openstreetmap.org/search?q=${text}&format=json&addressdetails=1`,
+      requestOptions,
+    )
+      .then(response => response.text())
+      .then(msgs => {
+        console.log('datatatat', msgs);
+        setDaata([JSON.parse(msgs)]);
+      })
+      .catch(error => console.log('error', error));
+  };
+  const Arr_Location = daata.filter(createFilter(search, KEYS_TO_FILTERS));
 
   //   console.log(btnCOlor);
   return (
@@ -215,7 +260,11 @@ export const UpdatePost = ({navigation}) => {
               placeholder={data.data ? data.data.Post.Description : null}
               numberOfLines={4}
               value={description}
-              onChangeText={description => setDescription(description!==''?description:data.data.Post.Description)}
+              onChangeText={description =>
+                setDescription(
+                  description !== '' ? description : data.data.Post.Description,
+                )
+              }
               placeholderTextColor={'#000'}
             />
             <View
@@ -239,9 +288,36 @@ export const UpdatePost = ({navigation}) => {
                   style={btnImage}
                   source={require('../../Asset/location.png')}
                 />
-                <Text style={btnText} numberOfLines={1}>
-                  {location}
-                </Text>
+                {!visible ? (
+                  <View>
+                    {search ? (
+                      <TouchableOpacity onPress={() => setVisible(true)}>
+                        <Text
+                          numberOfLines={1}
+                          style={{width: responsiveWidth(60)}}>
+                          {search}
+                        </Text>
+                      </TouchableOpacity>
+                    ) : (
+                      <TouchableOpacity onPress={() => setVisible(true)}>
+                        <Text
+                          style={{width: responsiveWidth(70)}}
+                          numberOfLines={1}>
+                          {location ? location : 'Search Location'}
+                        </Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                ) : (
+                  <SearchInput
+                    onChangeText={term => {
+                      searchUpdated(term);setVisible(true)
+                    }}
+                    placeholder={location ? location : 'Search Location'}
+                    onFocus={() => setVisible(true)}
+                  />
+                )}
+               
                 <Text
                   style={{
                     color: COLOR_PRIMARY,
@@ -252,11 +328,53 @@ export const UpdatePost = ({navigation}) => {
                 </Text>
               </TouchableOpacity>
             </View>
-
+            {search.length > 0 && visible ? (
+                  <ScrollView
+                    style={{
+                      height: '50%',
+                      zIndex: 1,
+                      top: responsiveHeight(57),
+                      position: 'absolute',
+                    }}>
+                    {daata.length > 0
+                      ? Arr_Location.map(item => {
+                          console.log('item', item.display_name);
+                          return item.map(item => {
+                            return (
+                              <TouchableOpacity
+                                style={{
+                                  padding: 20,
+                                  backgroundColor: 'white',
+                                  flexDirection: 'row',
+                                  borderBottomColor: 'black',
+                                  borderBottomWidth: 1,
+                                }}
+                                onPress={() => {
+                                  saveData(item);
+                                  setSearch(item.display_name);
+                                  setVisible(false);
+                                }}>
+                                <SimpleLineIcons
+                                  name="location-pin"
+                                  size={responsiveFontSize(2.5)}
+                                  color={COLOR_PRIMARY}
+                                  style={{
+                                    marginRight: responsiveWidth(4),
+                                  }}
+                                />
+                                <Text>{item.display_name}</Text>
+                              </TouchableOpacity>
+                            );
+                          });
+                        })
+                      : null}
+                  </ScrollView>
+                ) : null}
             <TouchableOpacity style={ViewStyleImage}>
-           
               <ImageBackground
-                style={[ViewStyleImage, {zIndex: 1}]}
+                style={[ViewStyleImage, {
+                  // zIndex: 0
+                  }]}
                 source={{
                   uri: image
                     ? image
@@ -271,15 +389,26 @@ export const UpdatePost = ({navigation}) => {
                     borderRadius: responsiveHeight(6),
                     justifyContent: 'center',
                     alignItems: 'center',
-                    zIndex: 0,
+                    // zIndex: 0,
                     backgroundColor: COLOR_PRIMARY,
                   }}>
-                  <Entypo
-                    name="cross"
-                    size={responsiveFontSize(2.5)}
-                    color={'white'}
-                    onPress={() => handleChoosePhoto()}
-                  />
+                  {data.data ? (
+                    !data.data.Post.Picture ? (
+                      <Entypo
+                        name="plus"
+                        size={responsiveFontSize(2.5)}
+                        color={'white'}
+                        onPress={() => handleChoosePhoto()}
+                      />
+                    ) : (
+                      <Entypo
+                        name="minus"
+                        size={responsiveFontSize(2.5)}
+                        color={'white'}
+                        onPress={() => handleChoosePhoto()}
+                      />
+                    )
+                  ) : null}
                 </View>
               </ImageBackground>
             </TouchableOpacity>

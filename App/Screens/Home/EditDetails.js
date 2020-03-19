@@ -148,6 +148,12 @@ export const EditDetails = ({navigation}) => {
         console.log('error', error);
       });
   };
+  const CommentPost = post => {
+    new ApiManager()
+      .postComment(post, comment)
+      .then(resp => console.log(resp))
+      .catch(error => console.log(error));
+  };
   const postData = async () => {
     let lat = await AsyncStorage.getItem('lat');
     let long = await AsyncStorage.getItem('lon');
@@ -411,7 +417,30 @@ export const EditDetails = ({navigation}) => {
             })}
           </KeyboardAvoidingView>
         </ParallaxScrollView>
-      )}
+      )} 
+      {
+        data.data? <View style={TextinputView}>
+        <TextInput
+          style={textInputField}
+          placeholder={`interact with ${data.data.Post.User.Name}`}
+          value={comment}
+          onChangeText={text => setComment(text)}
+          onFocus={() => setFocusState(true)}
+        />
+        <TouchableOpacity
+          onPress={() => {
+            CommentPost(data.data.Post._id);
+            setComment('');
+            postData();
+          }}
+          style={sendmsgImage}>
+          <Image
+            style={sendmsgImage}
+            source={require('../../Asset/circlesend.png')}
+          />
+        </TouchableOpacity>
+      </View>:null
+      }
       <Modal
         animationType={'pokeman'}
         transparent={true}
@@ -477,7 +506,7 @@ export const EditDetails = ({navigation}) => {
             </View>
           </View>
         </View>
-      </Modal>
+      </Modal>     
     </View>
   );
 };

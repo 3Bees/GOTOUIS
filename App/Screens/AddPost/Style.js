@@ -41,6 +41,7 @@ export const ViewStyleImage={
   alignItems: 'center',
   borderWidth: 1,
   borderColor: 'rgba(29, 33, 31, 0.0781523)',
+  zIndex:0
 }
 export const SearchIcons = {
   marginHorizontal: responsiveWidth(3),

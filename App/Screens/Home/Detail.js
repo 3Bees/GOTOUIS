@@ -311,7 +311,7 @@ export const Detail = ({navigation}) => {
                       : data.data.Post.Type == 1
                       ? 'Favour'
                       : data.data.Post.Type == 2
-                      ? data.data.Post.Price
+                      ? `$${data.data.Post.Price}`
                       : 'Looking For'}
                   </Text>
                 </TouchableOpacity>
@@ -482,11 +482,11 @@ export const Detail = ({navigation}) => {
             })}
           </KeyboardAvoidingView>
         </ParallaxScrollView>
-      )}
-      <View style={TextinputView}>
+      )}{
+        data.data? <View style={TextinputView}>
         <TextInput
           style={textInputField}
-          placeholder="interact with jonas"
+          placeholder={`interact with ${data.data.Post.User.Name}`}
           value={comment}
           onChangeText={text => setComment(text)}
           onFocus={() => setFocusState(true)}
@@ -503,7 +503,9 @@ export const Detail = ({navigation}) => {
             source={require('../../Asset/circlesend.png')}
           />
         </TouchableOpacity>
-      </View>
+      </View>:null
+      }
+     
     </View>
   );
 };

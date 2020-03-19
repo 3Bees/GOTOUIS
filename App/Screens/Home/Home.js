@@ -8,6 +8,7 @@ import {
   Image,
   FlatList,
   TextInput,
+  ScrollView,
   ImageBackground,
   Modal,
   KeyboardAvoidingView,
@@ -86,10 +87,11 @@ import {
 import {Slider} from 'react-native-elements';
 import Button from '../../Common/Button/Button';
 import LinearGradient from 'react-native-linear-gradient';
-import {ScrollView} from 'react-native-gesture-handler';
 import AsyncStorage from '@react-native-community/async-storage';
 import ApiManager from '../../ApiManager/ApiManager';
 import {useSelector, useDispatch} from 'react-redux';
+import SearchInput, {createFilter} from 'react-native-search-filter';
+const KEYS_TO_FILTERS = ['Subject'];
 
 export const Home = ({navigation}) => {
   const [modalVisible, setmodalVisible] = useState(false);
@@ -99,13 +101,17 @@ export const Home = ({navigation}) => {
   const [search, setSearch] = useState('');
   const [slide, setSlide] = useState(1);
   const [lon, setLong] = useState('');
+  const [visible, setVisible] = useState(false);
   const dispatch = useDispatch();
   const toggleModal = () => {
     setmodalVisible(!modalVisible);
   };
   console.disableYellowBox = true;
+ const searchUpdated=(term)=> {
+    setSearch(term )
+  }
   useEffect(() => {
-    if (data.data == undefined) {
+    if(loading){
       Data();
     }
     const navFocusListener = navigation.addListener('didFocus', () => {
@@ -151,14 +157,13 @@ export const Home = ({navigation}) => {
     );
     return geolib.convertDistance(distance, 'km').toFixed(1);
   };
-
   return (
     <ScrollView
       style={{
         flex: 1,
         backgroundColor: modalVisible ? 'rgba(0,0,0,0.1)' : '#fcfdfd',
       }}>
-      <KeyboardAvoidingView behavior="padding" enabled>
+      {/* <KeyboardAvoidingView behavior="padding" enabled> */}
         <StatusBar
           translucent
           backgroundColor="transparent"
@@ -235,33 +240,18 @@ export const Home = ({navigation}) => {
                 size={responsiveFontSize(3)}
                 color={COLOR_PRIMARY}
               />
-              <TextInput
-                placeholder="Search"
-                value={search}
-                onChangeText={text => setSearch(text)}
-                style={{
-                  margin: 0,
-                  padding: 0,
-                  backgroundColor: '#F4F5F5',
-                  fontSize: responsiveFontSize(2),
-                }}
-              />
-              {search ? (
-                <TouchableOpacity
-                  style={crossContainer}
-                  onPress={() => setSearch('')}>
-                  <Entypo
-                    name="circle-with-cross"
-                    size={responsiveFontSize(3)}
-                  />
-                </TouchableOpacity>
-              ) : null}
+              <SearchInput
+                  onChangeText={(text) => {
+                    searchUpdated(text)
+                    // setSearch(text)
+                    setVisible(true);
+                  }}
+                  placeholder={"Search"}
+                  onFocus={() => setVisible(true)}
+                /> 
+              
             </View>
-            {search ? (
-              <View style={cancelTextContainer}>
-                <Text style={cancelTextStyle}>Cancel</Text>
-              </View>
-            ) : (
+             
               <View style={locationbar}>
                 <TouchableOpacity
                   onPress={() => {
@@ -285,9 +275,293 @@ export const Home = ({navigation}) => {
                   />
                 </TouchableOpacity>
               </View>
-            )}
           </View>
-          {data.data == undefined ? (
+          <View>
+          {search.length > 0 && visible? 
+               <View>
+              {
+                    data.data.Posts.filter(createFilter(search, KEYS_TO_FILTERS)).map(item => {
+                      return (
+                        <View>
+                  {item.Activated==true?
+                    (!item.Picture ? (
+                      <TouchableOpacity
+                        onPress={() => {
+                          if (User.user._id == item.User._id) {
+                            navigation.navigate('EditGymmate', {
+                              id: item._id,
+                            });
+                          } else {
+                            navigation.navigate('Gymmate', {
+                              id: item._id,
+                            });
+                          }
+                        }}
+                        style={LookingContainer}>
+                        <View style={LookingTopTextContainer}>
+                          <Text style={LookingName} numberOfLines={2}>{item.Subject}</Text>
+                          <Text
+                            style={{
+                              color: '#76807C',
+                              fontSize: responsiveFontSize(1.8),
+                              fontFamily:
+                                Platform.OS === 'android'
+                                  ? 'Muli-Regular'
+                                  : null,
+                            }} numberOfLines={2}>
+                            {item.Description}
+                          </Text>
+                        </View>
+                        {item.Type == 0 ? (
+                          <View style={StatusContainer}>
+                            <Text style={lookingForText}>Donation</Text>
+                          </View>
+                        ) : item.Type == 1 ? (
+                          <View style={StatusContainerFavour}>
+                            <Text style={lookingForText}>Favour</Text>
+                          </View>
+                        ) : item.Type == 2 ? (
+                          <View style={StatusContainerSell}>
+                            <Text style={lookingForText}>
+                              ${item.Price}
+                            </Text>
+                          </View>
+                        ) : (
+                          <View style={LookingForTextContainer}>
+                            <Text style={lookingForText}>Looking For</Text>
+                          </View>
+                        )}
+                        <View style={LookLocationpinCotainer}>
+                          <View style={UserDetailContainer}>
+                            <Image
+                              style={userImage}
+                              source={{uri: item.User.Photo}}
+                            />
+                            <View>
+                              <Text style={UserName}>
+                                {item.User.Name}
+                              </Text>
+                              {item.User.Rating?
+                              <View style={RatingContainer}>
+                                <Entypo
+                                  name="star"
+                                  size={responsiveFontSize(1.5)}
+                                  color={COLOR_FAVOUR}
+                                />
+                                <Text
+                                  style={{
+                                    fontSize: responsiveFontSize(1.5),
+                                    bottom: 1,
+                                    fontFamily:
+                                      Platform.OS === 'android'
+                                        ? 'Muli-Regular'
+                                        : 'Muli',
+                                    color: '#76807C',
+                                  }}>
+                                 {item.User.Rating} 
+                                </Text>
+                              </View>:null}
+                            </View>
+                          </View>
+                          <View
+                            style={{
+                              flexDirection: 'row',
+                              right: responsiveWidth(4.5),
+                            }}>
+                            <SimpleLineIcons
+                              name="location-pin"
+                              size={responsiveFontSize(1.5)}
+                              color={TEXTINPUT_COLOR}
+                              style={locationpinStyle1}
+                            />
+                            <Text
+                              style={[
+                                locationpinText,
+                                {
+                                  left: 1,
+                                  top: 1,
+                                  color: TEXTINPUT_COLOR,
+                                },
+                              ]}>
+                              {item.Location
+                                ? calculateLoc(item.Location)
+                                : null}{' '}
+                              KM
+                            </Text>
+                          </View>
+                        </View>
+                      </TouchableOpacity>
+                    ) : (
+                      <TouchableOpacity
+                        style={ListContainer}
+                        onPress={() => {
+                          if (User.user._id == item.User._id) {
+                            navigation.navigate('EditDetails', {
+                              id: item._id,
+                            });
+                          } else {
+                            navigation.navigate('Detail', {
+                              id: item._id,
+                            });
+                          }
+                        }}>
+                        <View style={listView2}>
+                          <Text style={TextDes} numberOfLines={2}>{item.Subject}</Text>
+                          <View style={imageView2}>
+                            <Image
+                              style={imageStyle}
+                              source={{uri: item.User.Photo}}
+                            />
+                            <Text style={TextName}>{item.User.Name}</Text>
+                          </View>
+                        </View>
+                        <ImageBackground
+                          source={{uri: item.Picture}}
+                          style={backgroundImageStyle}
+                          imageStyle={{
+                            borderBottomRightRadius: responsiveHeight(1),
+                            borderTopRightRadius: responsiveHeight(1),
+                            height: '100%',
+                            width: '100%',
+                            backgroundColor: 'white',
+                          }}>
+                          <LinearGradient
+                            colors={[
+                              'rgba(29, 33, 31, 0.0001)',
+                              'rgba(29, 33, 31, 0.5)',
+                            ]}
+                            style={{
+                              flex: 1,
+                              borderTopRightRadius: responsiveHeight(1),
+                              borderBottomRightRadius: responsiveHeight(1),
+                            }}>
+                            {item.Type == 0 ? (
+                              <View>
+                                <View style={StatusContainer}>
+                                  <Text style={StatusText}>{'Donate'}</Text>
+                                </View>
+                                <View style={IconGesture}>
+                                  <MaterialCommunityIcons
+                                    name="gesture-tap"
+                                    color={COLOR_BACKGROUND}
+                                    size={responsiveFontSize(2)}
+                                    style={{bottom: 2.8, zIndex: 1}}
+                                  />
+                                  <Text style={GestureNumberText}>{item.Likes.length}</Text>
+                                  <SimpleLineIcons
+                                    name="location-pin"
+                                    size={responsiveFontSize(1.5)}
+                                    color={'white'}
+                                    style={locationpinStyle}
+                                  />
+                                  <Text
+                                    style={[
+                                      locationpinText,
+                                      {
+                                        color: 'white',
+                                      },
+                                    ]}>
+                                    {calculateLoc(item.Location)} KM
+                                  </Text>
+                                </View>
+                              </View>
+                            ) : item.Type == 1 ? (
+                              <View>
+                                <View style={StatusContainerFavour}>
+                                  <Text style={StatusText}>{'Favour'}</Text>
+                                </View>
+                                <View style={locationpinContainer}>
+                                  <SimpleLineIcons
+                                    name="location-pin"
+                                    size={responsiveFontSize(1.5)}
+                                    color={COLOR_BACKGROUND}
+                                    style={[locationpinStyle2]}
+                                  />
+                                  <Text
+                                    style={[
+                                      locationpinText,
+                                      {
+                                        color: 'white',
+                                      },
+                                    ]}>
+                                    {calculateLoc(item.Location)} KM
+                                  </Text>
+                                </View>
+                              </View>
+                            ) : item.Type == 3 ? (
+                              <View>
+                                <View style={LookingForTextContainer}>
+                                  <Text style={StatusText}>
+                                    {'Looking For'}
+                                  </Text>
+                                </View>
+                                <View style={locationpinContainer}>
+                                  <SimpleLineIcons
+                                    name="location-pin"
+                                    size={responsiveFontSize(1.5)}
+                                    color={COLOR_BACKGROUND}
+                                    style={[locationpinStyle2]}
+                                  />
+                                  <Text
+                                    style={[
+                                      locationpinText,
+                                      {
+                                        color: 'white',
+                                      },
+                                    ]}>
+                                    {calculateLoc(item.Location)} KM
+                                  </Text>
+                                </View>
+                              </View>
+                            ) : (
+                              <View>
+                                <View style={StatusContainerSell}>
+                                  <Text style={StatusText}>
+                                    {item.Price}$
+                                  </Text>
+                                </View>
+                                <View style={IconGesture}>
+                                  <MaterialCommunityIcons
+                                    name="gesture-tap"
+                                    color={COLOR_BACKGROUND}
+                                    size={responsiveFontSize(2)}
+                                    style={{bottom: 2}}
+                                  />
+                                  <Text style={GestureNumberText}>
+                                    {item.Likes
+                                      ? item.Likes.length
+                                      : 0}
+                                  </Text>
+                                  <SimpleLineIcons
+                                    name="location-pin"
+                                    size={responsiveFontSize(1.5)}
+                                    color={COLOR_BACKGROUND}
+                                    style={locationpinStyle}
+                                  />
+                                  <Text
+                                    style={[
+                                      locationpinText,
+                                      {
+                                        color: 'white',
+                                      },
+                                    ]}>
+                                    {calculateLoc(item.Location)} KM
+                                  </Text>
+                                </View>
+                              </View>
+                            )}
+                          </LinearGradient>
+                        </ImageBackground>
+                      </TouchableOpacity>
+                    )):null}
+                  </View>
+               
+                        );
+              }
+                      )
+                    
+                  }
+                  </View>:data.data == undefined ? (
             <ActivityIndicator
               size={'large'}
               style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}
@@ -298,14 +572,14 @@ export const Home = ({navigation}) => {
               data={data.data['Posts']}
               keyExtractor={item => item.id}
               renderItem={(item, index) => {
-                console.log("data",item.item.Picture,item.item.Subject)
                 return (
-                  <View>{item.item.Activated==true?
+                  <View>
+                  {item.item.Activated==true?
                     (!item.item.Picture ? (
                       <TouchableOpacity
                         onPress={() => {
                           if (User.user._id == item.item.User._id) {
-                            navigation.navigate('EditDetails', {
+                            navigation.navigate('EditGymmate', {
                               id: item.item._id,
                             });
                           } else {
@@ -325,7 +599,7 @@ export const Home = ({navigation}) => {
                                 Platform.OS === 'android'
                                   ? 'Muli-Regular'
                                   : null,
-                            }} numberOfLines={2}>{console.log("des>>>>>>>",item.item.Subject)}
+                            }} numberOfLines={2}>
                             {item.item.Description}
                           </Text>
                         </View>
@@ -464,7 +738,7 @@ export const Home = ({navigation}) => {
                                     size={responsiveFontSize(2)}
                                     style={{bottom: 2.8, zIndex: 1}}
                                   />
-                                  <Text style={GestureNumberText}>3</Text>
+                                  <Text style={GestureNumberText}>{item.item.Likes.length}</Text>
                                   <SimpleLineIcons
                                     name="location-pin"
                                     size={responsiveFontSize(1.5)}
@@ -606,8 +880,8 @@ export const Home = ({navigation}) => {
               </View>
             </View>
           )}
+        </View>
         </SafeAreaView>
-      </KeyboardAvoidingView>
     </ScrollView>
   );
 };

@@ -124,7 +124,7 @@ export const PostAdd = ({navigation}) => {
     setLng(item.lon);
     await AsyncStorage.setItem('lat', item.lat);
     await AsyncStorage.setItem('lon', item.lon);
-    await AsyncStorage.setItem('name', item.display_name);
+    await AsyncStorage.setItem('name', item.address.town,+item.address.state,+item.address.country)
   };
   const searchUpdated = text => {
     setSearch(text);
@@ -134,7 +134,7 @@ export const PostAdd = ({navigation}) => {
     };
 
     fetch(
-      `https://nominatim.openstreetmap.org/search?city=${text}&format=json`,
+      `https://nominatim.openstreetmap.org/search?q=${text}&format=json&addressdetails=1`,
       requestOptions,
     )
       .then(response => response.text())

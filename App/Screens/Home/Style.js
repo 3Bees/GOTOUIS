@@ -393,7 +393,6 @@ export const TextinputView1={
 }
 export const sendmsgImage={
   height:Platform.OS === 'android' ? responsiveHeight(5):responsiveHeight(4),
-
   width: responsiveHeight(5),
   borderRadius: responsiveHeight(5),
   resizeMode: 'contain',
@@ -511,7 +510,7 @@ export const LookingContainer = {
     height: 1,
   },
   shadowOpacity: 0.4,
-  shadowRadius: 2.49,
+  shadowRadius: 2.49,zIndex:1
 };
 export const StatusContainer = {
   marginTop: responsiveHeight(1),

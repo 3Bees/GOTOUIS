@@ -66,8 +66,8 @@ export const AddPost = ({navigation}) => {
             <View style={ViewFlex7}>
               <Text style={[TextStyleDo1, {color: '#00989B'}]}>Donate</Text>
               <Text style={cardText}>
-                Make a positive impect! Help to empower people to fight against
-                global waste problem,poverty,pollution and climate change.
+                Make a positive impect! Help empower people to fight 
+                global problem of waste,poverty,pollution and climate change.
               </Text>
             </View>
           </TouchableOpacity>
@@ -93,8 +93,7 @@ export const AddPost = ({navigation}) => {
             <View style={ViewFlex7}>
               <Text style={[TextStyleDo1, {color: '#DE8D00'}]}>Favour</Text>
               <Text style={cardText}>
-                Ask for a Favour,may you can find a hand for you to make any
-                service.
+                Ask for a favour,you can get help to perform any services.
               </Text>
             </View>
           </TouchableOpacity>
@@ -120,7 +119,7 @@ export const AddPost = ({navigation}) => {
             <View style={ViewFlex7}>
               <Text style={[TextStyleDo1, {color: '#C8001A'}]}>Sale</Text>
               <Text style={cardText}>
-                Do you want to earn some money selling things you are not
+                Do you want to make some money selling things you are not
                 using?Post it!
               </Text>
             </View>
@@ -151,7 +150,7 @@ export const AddPost = ({navigation}) => {
                 Looking For
               </Text>
               <Text style={cardText}>
-                Looking for some specific like a tour guide,a gymate or an
+                Are you Looking for something specific like a tour guide,a gymmate or an
                 English Teacher?
               </Text>
               <Text style={cardText}>Let everyone know?</Text>
